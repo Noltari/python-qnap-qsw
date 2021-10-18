@@ -114,11 +114,11 @@ class QSHAData:
     def set_system_sensor(self, system_sensor):
         """Set system/sensor data."""
         if system_sensor:
-            if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] > 0:
+            if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] >= 0:
                 self.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
             else:
                 self.fan_speed[0] = None
-            if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] > 0:
+            if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
                 self.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
             else:
                 self.fan_speed[1] = None
