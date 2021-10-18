@@ -153,6 +153,36 @@ class QSHA:
         self.qsha_data = QSHAData()
         self._login = False
 
+    def async_identify(self):
+        """Update data from QNAP QSW API."""
+        if self.login():
+            error = False
+            logout = False
+
+            try:
+                system_board = self.qsa.get_system_board()
+                if system_board:
+                    if system_board[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_system_board(system_board)
+                    elif system_board[ATTR_ERROR_CODE] == 401:
+                        logout = True
+                    else:
+                        error = True
+            except QSAException:
+                error = True
+
+            if logout:
+                self.logout()
+
+            if logout:
+                raise LoginError("QNAP QSW API returned unauthorized status")
+            if error:
+                raise ConnectionError("QNAP QSW API returned unknown error")
+
+            return not (error or logout)
+
+        return False
+
     # pylint: disable=R0912,R0915
     def async_update(self):
         """Update data from QNAP QSW API."""
