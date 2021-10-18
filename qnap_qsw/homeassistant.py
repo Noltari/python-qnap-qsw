@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Home Assistant client for the QNAP QSW API."""
 
-import logging
 import re
 
 from .const import (
@@ -41,8 +40,6 @@ from .const import (
     DATA_UPTIME,
 )
 from .interface import QSA, QSAException
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class LoginError(Exception):
@@ -154,7 +151,6 @@ class QSHA:
                     if firmware_condition[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_firmware_condition(firmware_condition)
                     elif firmware_condition[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("firmware/condition: login error")
                         logout = True
                     else:
                         error = True
@@ -167,7 +163,6 @@ class QSHA:
                     if firmware_info[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_firmware_info(firmware_info)
                     elif firmware_info[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("firmware/info: login error")
                         logout = True
                     else:
                         error = True
@@ -180,7 +175,6 @@ class QSHA:
                     if firmware_update[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_firmware_update(firmware_update)
                     elif firmware_update[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("firmware/update: login error")
                         logout = True
                     else:
                         error = True
@@ -193,7 +187,6 @@ class QSHA:
                     if system_board[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_system_board(system_board)
                     elif system_board[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("system/board: login error")
                         logout = True
                     else:
                         error = True
@@ -206,7 +199,6 @@ class QSHA:
                     if system_sensor[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_system_sensor(system_sensor)
                     elif system_sensor[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("system/sensor: login error")
                         logout = True
                     else:
                         error = True
@@ -219,7 +211,6 @@ class QSHA:
                     if system_time[ATTR_ERROR_CODE] == 200:
                         self.qsha_data.set_system_time(system_time)
                     elif system_time[ATTR_ERROR_CODE] == 401:
-                        _LOGGER.error("system/time: login error")
                         logout = True
                     else:
                         error = True
