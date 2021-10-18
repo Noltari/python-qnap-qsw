@@ -37,7 +37,7 @@ from .const import (
     DATA_TEMP_MAX,
     DATA_UPDATE,
     DATA_UPDATE_VERSION,
-    DATA_UPTIME,
+    DATA_UPTIME_SECONDS,
 )
 from .interface import QSA, QSAException
 
@@ -70,7 +70,7 @@ class QSHAData:
         self.temp_max = None
         self.update = False
         self.update_version = None
-        self.uptime = None
+        self.uptime_seconds = None
 
     def set_firmware_condition(self, firmware_condition):
         """Set firmware/condition data."""
@@ -124,7 +124,7 @@ class QSHAData:
     def set_system_time(self, system_time):
         """Set system/time data."""
         if system_time:
-            self.uptime = system_time[ATTR_RESULT][ATTR_UPTIME]
+            self.uptime_seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
 
 
 class QSHA:
@@ -257,7 +257,7 @@ class QSHA:
             DATA_TEMP_MAX: self.temp_max(),
             DATA_UPDATE: self.update(),
             DATA_UPDATE_VERSION: self.update_version(),
-            DATA_UPTIME: self.uptime(),
+            DATA_UPTIME_SECONDS: self.uptime_seconds(),
         }
 
         if self.fan_count() > 0:
@@ -347,6 +347,6 @@ class QSHA:
         """Firmware update version."""
         return self.qsha_data.update_version
 
-    def uptime(self) -> int:
-        """Uptime."""
-        return self.qsha_data.uptime
+    def uptime_seconds(self) -> int:
+        """Uptime seconds."""
+        return self.qsha_data.uptime_seconds
