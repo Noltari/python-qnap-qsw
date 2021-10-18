@@ -57,7 +57,7 @@ class QSHAData:
     # pylint: disable=R0902
     def __init__(self):
         """Init QNAP QSW data for Home Assistant."""
-        self.condition_anomaly = None
+        self.condition_anomaly = False
         self.condition_message = None
         self.firmware = None
         self.fan_speed = [None] * 2
@@ -229,15 +229,15 @@ class QSHA:
 
         return False
 
-    def condition_anomaly(self):
+    def condition_anomaly(self) -> bool:
         """Condition anomaly."""
         return self.qsha_data.condition_anomaly
 
-    def condition_message(self):
+    def condition_message(self) -> str:
         """Condition message."""
         return self.qsha_data.condition_message
 
-    def config_url(self):
+    def config_url(self) -> str:
         """Configuration URL."""
         return self.qsa.config_url()
 
@@ -267,7 +267,7 @@ class QSHA:
 
         return _data
 
-    def fan_count(self):
+    def fan_count(self) -> int:
         """Number of fans."""
         fans = self.qsha_data.fan_speed
         count = 0
@@ -276,15 +276,17 @@ class QSHA:
                 count = count + 1
         return count
 
-    def fan_speed(self, idx):
+    def fan_speed(self, idx) -> int:
         """Fan speed."""
+        if idx > len(self.qsha_data.fan_speed):
+            return None
         return self.qsha_data.fan_speed[idx]
 
-    def firmware(self):
+    def firmware(self) -> str:
         """Firmware."""
         return self.qsha_data.firmware
 
-    def login(self):
+    def login(self) -> bool:
         """Login."""
         if not self._login:
             if self.qsa.login(self.user, self.password):
@@ -297,19 +299,19 @@ class QSHA:
             self.qsa.logout()
         self._login = False
 
-    def mac_addr(self):
+    def mac_addr(self) -> str:
         """MAC address."""
         return self.qsha_data.mac
 
-    def model(self):
+    def model(self) -> str:
         """Product model."""
         return self.qsha_data.model
 
-    def product(self):
+    def product(self) -> str:
         """Product name."""
         return self.qsha_data.product
 
-    def reboot(self):
+    def reboot(self) -> bool:
         """Reboot QNAP QSW switch."""
         if self.login():
             response = self.qsa.post_system_command(ATTR_REBOOT)
@@ -322,29 +324,29 @@ class QSHA:
 
         return False
 
-    def serial(self):
+    def serial(self) -> str:
         """Serial number."""
         _serial = self.qsha_data.serial
         if _serial:
             return re.sub(r"[\W_]+", "", _serial)
         return None
 
-    def temp(self):
+    def temp(self) -> int:
         """Current temperature."""
         return self.qsha_data.temp
 
-    def temp_max(self):
+    def temp_max(self) -> int:
         """Max temperature."""
         return self.qsha_data.temp_max
 
-    def update(self):
+    def update(self) -> bool:
         """Firmware update."""
         return self.qsha_data.update
 
-    def update_version(self):
+    def update_version(self) -> str:
         """Firmware update version."""
         return self.qsha_data.update_version
 
-    def uptime(self):
+    def uptime(self) -> int:
         """Uptime."""
         return self.qsha_data.uptime
