@@ -150,81 +150,81 @@ class QSHA:
 
             try:
                 firmware_condition = self.qsa.get_firmware_condition()
+                if firmware_condition:
+                    if firmware_condition[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_firmware_condition(firmware_condition)
+                    elif firmware_condition[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("firmware/condition: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if firmware_condition:
-                if firmware_condition[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_firmware_condition(firmware_condition)
-                elif firmware_condition[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("firmware/condition: login error")
-                    logout = True
-                else:
-                    error = True
 
             try:
                 firmware_info = self.qsa.get_firmware_info()
+                if firmware_info:
+                    if firmware_info[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_firmware_info(firmware_info)
+                    elif firmware_info[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("firmware/info: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if firmware_info:
-                if firmware_info[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_firmware_info(firmware_info)
-                elif firmware_info[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("firmware/info: login error")
-                    logout = True
-                else:
-                    error = True
 
             try:
                 firmware_update = self.qsa.get_firmware_update_check()
+                if firmware_update:
+                    if firmware_update[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_firmware_update(firmware_update)
+                    elif firmware_update[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("firmware/update: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if firmware_update:
-                if firmware_update[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_firmware_update(firmware_update)
-                elif firmware_update[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("firmware/update: login error")
-                    logout = True
-                else:
-                    error = True
 
             try:
                 system_board = self.qsa.get_system_board()
+                if system_board:
+                    if system_board[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_system_board(system_board)
+                    elif system_board[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("system/board: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if system_board:
-                if system_board[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_system_board(system_board)
-                elif system_board[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("system/board: login error")
-                    logout = True
-                else:
-                    error = True
 
             try:
                 system_sensor = self.qsa.get_system_sensor()
+                if system_sensor:
+                    if system_sensor[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_system_sensor(system_sensor)
+                    elif system_sensor[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("system/sensor: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if system_sensor:
-                if system_sensor[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_system_sensor(system_sensor)
-                elif system_sensor[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("system/sensor: login error")
-                    logout = True
-                else:
-                    error = True
 
             try:
                 system_time = self.qsa.get_system_time()
+                if system_time:
+                    if system_time[ATTR_ERROR_CODE] == 200:
+                        self.qsha_data.set_system_time(system_time)
+                    elif system_time[ATTR_ERROR_CODE] == 401:
+                        _LOGGER.error("system/time: login error")
+                        logout = True
+                    else:
+                        error = True
             except QSAException:
                 error = True
-            if system_time:
-                if system_time[ATTR_ERROR_CODE] == 200:
-                    self.qsha_data.set_system_time(system_time)
-                elif system_time[ATTR_ERROR_CODE] == 401:
-                    _LOGGER.error("system/time: login error")
-                    logout = True
-                else:
-                    error = True
 
             if logout:
                 self.logout()
