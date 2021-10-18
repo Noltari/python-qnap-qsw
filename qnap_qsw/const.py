@@ -26,6 +26,16 @@ ATTR_USERNAME = "username"
 ATTR_UPTIME = "UpTime"
 ATTR_VERSION = "version"
 
+API_AUTHORIZATION = "Authorization"
+API_DEBUG = False
+API_QSW_ID = "QSW_ID"
+API_QSW_LANG = "QSW_LANG"
+API_TIMEOUT = 15
+API_URI = "api"
+API_URI_V1 = "v1"
+API_URI_FULL = f"{API_URI}/{API_URI_V1}"
+API_VERIFY = False
+
 DATA_CONDITION_ANOMALY = "condition_anomaly"
 DATA_CONDITION_MESSAGE = "condition_message"
 DATA_CONFIG_URL = "config_url"
@@ -42,13 +52,3 @@ DATA_TEMP_MAX = "temp_max"
 DATA_UPDATE = "update"
 DATA_UPDATE_VERSION = "update_version"
 DATA_UPTIME = "uptime"
-
-API_AUTHORIZATION = "Authorization"
-API_DEBUG = False
-API_QSW_ID = "QSW_ID"
-API_QSW_LANG = "QSW_LANG"
-API_TIMEOUT = 15
-API_URI = "api"
-API_URI_V1 = "v1"
-API_URI_FULL = f"{API_URI}/{API_URI_V1}"
-API_VERIFY = False
