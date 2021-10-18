@@ -51,4 +51,7 @@ DATA_TEMP = "temp"
 DATA_TEMP_MAX = "temp_max"
 DATA_UPDATE = "update"
 DATA_UPDATE_VERSION = "update_version"
+DATA_UPTIME = "uptime"
 DATA_UPTIME_SECONDS = "uptime_seconds"
+
+UPTIME_DELTA = 5

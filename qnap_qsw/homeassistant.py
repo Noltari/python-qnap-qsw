@@ -2,6 +2,7 @@
 """Home Assistant client for the QNAP QSW API."""
 
 import re
+from datetime import datetime, timedelta, timezone
 
 from .const import (
     ATTR_ANOMALY,
@@ -37,7 +38,9 @@ from .const import (
     DATA_TEMP_MAX,
     DATA_UPDATE,
     DATA_UPDATE_VERSION,
+    DATA_UPTIME,
     DATA_UPTIME_SECONDS,
+    UPTIME_DELTA,
 )
 from .interface import QSA, QSAException
 
@@ -70,6 +73,7 @@ class QSHAData:
         self.temp_max = None
         self.update = False
         self.update_version = None
+        self.uptime = None
         self.uptime_seconds = None
 
     def set_firmware_condition(self, firmware_condition):
@@ -121,12 +125,23 @@ class QSHAData:
             self.temp = system_sensor[ATTR_RESULT][ATTR_TEMP]
             self.temp_max = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
 
-    def set_system_time(self, system_time):
+    def set_system_time(self, system_time, utcnow):
         """Set system/time data."""
         if system_time:
             self.uptime_seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
+            if self.uptime:
+                new_uptime = (utcnow - timedelta(seconds=self.uptime_seconds)).replace(
+                    microsecond=0, tzinfo=timezone.utc
+                )
+                if abs((new_uptime - self.uptime).total_seconds()) > UPTIME_DELTA:
+                    self.uptime = new_uptime
+            else:
+                self.uptime = (utcnow - timedelta(seconds=self.uptime_seconds)).replace(
+                    microsecond=0, tzinfo=timezone.utc
+                )
 
 
+# pylint: disable=R0904
 class QSHA:
     """Gathers data from QNAP QSW API for Home Assistant."""
 
@@ -207,9 +222,10 @@ class QSHA:
 
             try:
                 system_time = self.qsa.get_system_time()
+                utcnow = datetime.utcnow()
                 if system_time:
                     if system_time[ATTR_ERROR_CODE] == 200:
-                        self.qsha_data.set_system_time(system_time)
+                        self.qsha_data.set_system_time(system_time, utcnow)
                     elif system_time[ATTR_ERROR_CODE] == 401:
                         logout = True
                     else:
@@ -257,6 +273,7 @@ class QSHA:
             DATA_TEMP_MAX: self.temp_max(),
             DATA_UPDATE: self.update(),
             DATA_UPDATE_VERSION: self.update_version(),
+            DATA_UPTIME: self.uptime(),
             DATA_UPTIME_SECONDS: self.uptime_seconds(),
         }
 
@@ -346,6 +363,10 @@ class QSHA:
     def update_version(self) -> str:
         """Firmware update version."""
         return self.qsha_data.update_version
+
+    def uptime(self) -> datetime:
+        """Uptime."""
+        return self.qsha_data.uptime
 
     def uptime_seconds(self) -> int:
         """Uptime seconds."""
