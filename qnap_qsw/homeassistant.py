@@ -80,7 +80,11 @@ class QSHAData:
         """Set firmware/condition data."""
         if firmware_condition:
             self.condition_anomaly = firmware_condition[ATTR_RESULT][ATTR_ANOMALY]
-            self.condition_message = firmware_condition[ATTR_RESULT][ATTR_MESSAGE]
+            _msg = firmware_condition[ATTR_RESULT][ATTR_MESSAGE]
+            if self.condition_anomaly and _msg and len(_msg) > 0:
+                self.condition_message = _msg
+            else:
+                self.condition_message = None
 
     def set_firmware_info(self, firmware_info):
         """Set firmware/info data."""
