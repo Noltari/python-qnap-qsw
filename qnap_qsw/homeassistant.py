@@ -157,7 +157,7 @@ class QSHA:
         self.qsha_data = QSHAData()
         self._login = False
 
-    def async_identify(self):
+    async def async_identify(self):
         """Update data from QNAP QSW API."""
         if self.login():
             error = False
@@ -187,8 +187,25 @@ class QSHA:
 
         return False
 
+    async def async_logout(self):
+        """Logout from QNAP QSW switch."""
+        return self.logout()
+
+    async def async_reboot(self):
+        """Reboot QNAP QSW switch."""
+        if self.login():
+            response = self.qsa.post_system_command(ATTR_REBOOT)
+            if (
+                response
+                and response[ATTR_ERROR_CODE] == 200
+                and not response[ATTR_RESULT]
+            ):
+                return True
+
+        return False
+
     # pylint: disable=R0912,R0915
-    def async_update(self):
+    async def async_update(self):
         """Update data from QNAP QSW API."""
         if self.login():
             error = False
@@ -361,19 +378,6 @@ class QSHA:
     def product(self) -> str:
         """Product name."""
         return self.qsha_data.product
-
-    def reboot(self) -> bool:
-        """Reboot QNAP QSW switch."""
-        if self.login():
-            response = self.qsa.post_system_command(ATTR_REBOOT)
-            if (
-                response
-                and response[ATTR_ERROR_CODE] == 200
-                and not response[ATTR_RESULT]
-            ):
-                return True
-
-        return False
 
     def serial(self) -> str:
         """Serial number."""
