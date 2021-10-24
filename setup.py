@@ -14,7 +14,7 @@ if sys.argv[-1] == 'publish':
 requirements = [x.strip() for x in open(here('requirements.txt')).readlines()]
 
 setup(name='qnap-qsw',
-      version='0.0.3',
+      version='0.0.4',
       description='QNAP QSW API library',
       keywords='qnap,qsw,switch',
       author='noltari',
