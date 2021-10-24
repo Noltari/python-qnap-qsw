@@ -158,7 +158,11 @@ class QSHA:
         self._login = False
 
     async def async_identify(self):
-        """Update data from QNAP QSW API."""
+        """Identify switch with QNAP QSW API (async)."""
+        return self.sync_identify()
+
+    def sync_identify(self):
+        """Identify switch with QNAP QSW API."""
         if self.login():
             error = False
             logout = False
@@ -188,10 +192,18 @@ class QSHA:
         return False
 
     async def async_logout(self):
+        """Logout from QNAP QSW switch (async)."""
+        return self.sync_logout()
+
+    def sync_logout(self):
         """Logout from QNAP QSW switch."""
         return self.logout()
 
     async def async_reboot(self):
+        """Reboot QNAP QSW switch (async)."""
+        return self.sync_reboot()
+
+    def sync_reboot(self):
         """Reboot QNAP QSW switch."""
         if self.login():
             response = self.qsa.post_system_command(ATTR_REBOOT)
