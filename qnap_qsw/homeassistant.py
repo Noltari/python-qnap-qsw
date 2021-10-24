@@ -216,8 +216,12 @@ class QSHA:
 
         return False
 
-    # pylint: disable=R0912,R0915
     async def async_update(self):
+        """Update data from QNAP QSW API (async)."""
+        return self.sync_update()
+
+    # pylint: disable=R0912,R0915
+    def sync_update(self):
         """Update data from QNAP QSW API."""
         if self.login():
             error = False
