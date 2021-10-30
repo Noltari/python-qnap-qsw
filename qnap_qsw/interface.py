@@ -3,6 +3,7 @@
 
 import base64
 import logging
+from http import HTTPStatus
 
 import requests
 import urllib3
@@ -281,7 +282,10 @@ class QSA:
 
         if not response:
             return None
-        if ATTR_ERROR_CODE not in response or response[ATTR_ERROR_CODE] != 200:
+        if (
+            ATTR_ERROR_CODE not in response
+            or response[ATTR_ERROR_CODE] != HTTPStatus.OK
+        ):
             return None
 
         self.api_key = response[ATTR_RESULT]
