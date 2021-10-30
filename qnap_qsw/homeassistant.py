@@ -162,190 +162,20 @@ class QSHA:
         self.qsha_data = QSHAData()
         self._login = False
 
-    async def async_identify(self):
-        """Identify switch with QNAP QSW API (async)."""
-        return self.sync_identify()
-
-    def sync_identify(self):
-        """Identify switch with QNAP QSW API."""
-        if self.login():
-            error = False
-            logout = False
-
-            try:
-                system_board = self.qsa.get_system_board()
-                if system_board:
-                    if system_board[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_system_board(system_board)
-                    elif system_board[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        error = True
-            except QSAException:
-                error = True
-
-            if logout:
-                self.logout()
-
-            if logout:
-                raise LoginError("QNAP QSW API returned unauthorized status")
-            if error:
-                raise ConnectionError("QNAP QSW API returned unknown error")
-
-            return not (error or logout)
-
-        return False
-
-    async def async_logout(self):
-        """Logout from QNAP QSW switch (async)."""
-        return self.sync_logout()
-
-    def sync_logout(self):
-        """Logout from QNAP QSW switch."""
-        return self.logout()
-
-    async def async_reboot(self):
-        """Reboot QNAP QSW switch (async)."""
-        return self.sync_reboot()
-
-    def sync_reboot(self):
-        """Reboot QNAP QSW switch."""
-        if self.login():
-            response = self.qsa.post_system_command(ATTR_REBOOT)
-            if (
-                response
-                and response[ATTR_ERROR_CODE] == HTTPStatus.OK
-                and not response[ATTR_RESULT]
-            ):
-                return True
-
-        return False
-
-    async def async_update(self):
-        """Update data from QNAP QSW API (async)."""
-        return self.sync_update()
-
-    # pylint: disable=R0912,R0915
-    def sync_update(self):
-        """Update data from QNAP QSW API."""
-        if self.login():
-            error = False
-            logout = False
-
-            try:
-                firmware_condition = self.qsa.get_firmware_condition()
-                if firmware_condition:
-                    if firmware_condition[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_firmware_condition(firmware_condition)
-                    elif firmware_condition[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'firmware/condition: ERROR[%s]="%s"',
-                            {firmware_condition[ATTR_ERROR_CODE]},
-                            {firmware_condition[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            try:
-                firmware_info = self.qsa.get_firmware_info()
-                if firmware_info:
-                    if firmware_info[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_firmware_info(firmware_info)
-                    elif firmware_info[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'firmware/info: ERROR[%s]="%s"',
-                            {firmware_info[ATTR_ERROR_CODE]},
-                            {firmware_info[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            try:
-                firmware_update = self.qsa.get_firmware_update_check()
-                if firmware_update:
-                    if firmware_update[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_firmware_update(firmware_update)
-                    elif firmware_update[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'firmware/update/check: ERROR[%s]="%s"',
-                            {firmware_update[ATTR_ERROR_CODE]},
-                            {firmware_update[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            try:
-                system_board = self.qsa.get_system_board()
-                if system_board:
-                    if system_board[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_system_board(system_board)
-                    elif system_board[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'system/board: ERROR[%s]="%s"',
-                            {system_board[ATTR_ERROR_CODE]},
-                            {system_board[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            try:
-                system_sensor = self.qsa.get_system_sensor()
-                if system_sensor:
-                    if system_sensor[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_system_sensor(system_sensor)
-                    elif system_sensor[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'system/sensor: ERROR[%s]="%s"',
-                            {system_sensor[ATTR_ERROR_CODE]},
-                            {system_sensor[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            try:
-                system_time = self.qsa.get_system_time()
-                utcnow = datetime.utcnow()
-                if system_time:
-                    if system_time[ATTR_ERROR_CODE] == HTTPStatus.OK:
-                        self.qsha_data.set_system_time(system_time, utcnow)
-                    elif system_time[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
-                        logout = True
-                    else:
-                        _LOGGER.warning(
-                            'system/time: ERROR[%s]="%s"',
-                            {system_time[ATTR_ERROR_CODE]},
-                            {system_time[ATTR_ERROR_MESSAGE]},
-                        )
-                        error = True
-            except QSAException:
-                error = True
-
-            if logout:
-                self.logout()
-
-            if logout:
-                raise LoginError("QNAP QSW API returned unauthorized status")
-            if error:
-                raise ConnectionError("QNAP QSW API returned unknown error")
-
-            return not (error or logout)
-
-        return False
+    def api_response(self, cmd, result):
+        """Process response from QNAP QSW API."""
+        if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
+            self.logout()
+            raise LoginError("API returned unauthorized status")
+        if result[ATTR_ERROR_CODE] != HTTPStatus.OK:
+            _LOGGER.warning(
+                '%s: Status[%s]="%s"',
+                {cmd},
+                {result[ATTR_ERROR_CODE]},
+                {result[ATTR_ERROR_MESSAGE]},
+            )
+            return False
+        return True
 
     def condition_anomaly(self) -> bool:
         """Get condition anomaly."""
@@ -430,6 +260,19 @@ class QSHA:
         """Get product name."""
         return self.qsha_data.product
 
+    def reboot(self):
+        """Reboot QNAP QSW switch."""
+        if self.login():
+            response = self.qsa.post_system_command(ATTR_REBOOT)
+            if (
+                response
+                and response[ATTR_ERROR_CODE] == HTTPStatus.OK
+                and not response[ATTR_RESULT]
+            ):
+                return True
+
+        return False
+
     def serial(self) -> str:
         """Get serial number."""
         _serial = self.qsha_data.serial
@@ -452,6 +295,77 @@ class QSHA:
     def update_version(self) -> str:
         """Get firmware update version."""
         return self.qsha_data.update_version
+
+    def update_firmware_condition(self):
+        """Update firmware/condition from QNAP QSW API."""
+        try:
+            firmware_condition = self.qsa.get_firmware_condition()
+            if firmware_condition and self.api_response(
+                "firmware/condition", firmware_condition
+            ):
+                self.qsha_data.set_firmware_condition(firmware_condition)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_firmware_info(self):
+        """Update firmware/info from QNAP QSW API."""
+        try:
+            firmware_info = self.qsa.get_firmware_info()
+            if firmware_info and self.api_response("firmware/info", firmware_info):
+                self.qsha_data.set_firmware_info(firmware_info)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_firmware_update_check(self):
+        """Update firmware/update/check from QNAP QSW API."""
+        try:
+            firmware_update = self.qsa.get_firmware_update_check()
+            if firmware_update and self.api_response(
+                "firmware/update/check", firmware_update
+            ):
+                self.qsha_data.set_firmware_update(firmware_update)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_system_board(self):
+        """Update system/board from QNAP QSW API."""
+        try:
+            system_board = self.qsa.get_system_board()
+            if system_board and self.api_response("system/board", system_board):
+                self.qsha_data.set_system_board(system_board)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_system_sensor(self):
+        """Update system/sensor from QNAP QSW API."""
+        try:
+            system_sensor = self.qsa.get_system_sensor()
+            if system_sensor and self.api_response("system/sensor", system_sensor):
+                self.qsha_data.set_system_sensor(system_sensor)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_system_time(self):
+        """Update system/time from QNAP QSW API."""
+        try:
+            system_time = self.qsa.get_system_time()
+            utcnow = datetime.utcnow()
+            if system_time and self.api_response("system/time", system_time):
+                self.qsha_data.set_system_time(system_time, utcnow)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
 
     def uptime(self) -> datetime:
         """Get uptime."""
