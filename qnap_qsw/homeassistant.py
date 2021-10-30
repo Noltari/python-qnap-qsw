@@ -348,19 +348,19 @@ class QSHA:
         return False
 
     def condition_anomaly(self) -> bool:
-        """Condition anomaly."""
+        """Get condition anomaly."""
         return self.qsha_data.condition_anomaly
 
     def condition_message(self) -> str:
-        """Condition message."""
+        """Get condition message."""
         return self.qsha_data.condition_message
 
     def config_url(self) -> str:
-        """Configuration URL."""
+        """Get configuration URL."""
         return self.qsa.config_url()
 
     def data(self):
-        """Data Dict."""
+        """Get data Dict."""
         _data = {
             DATA_CONDITION_ANOMALY: self.condition_anomaly(),
             DATA_CONDITION_MESSAGE: self.condition_message(),
@@ -387,7 +387,7 @@ class QSHA:
         return _data
 
     def fan_count(self) -> int:
-        """Number of fans."""
+        """Get number of fans."""
         fans = self.qsha_data.fan_speed
         count = 0
         for fan in fans:
@@ -396,13 +396,13 @@ class QSHA:
         return count
 
     def fan_speed(self, idx) -> int:
-        """Fan speed."""
+        """Get fan speed."""
         if idx > len(self.qsha_data.fan_speed):
             return None
         return self.qsha_data.fan_speed[idx]
 
     def firmware(self) -> str:
-        """Firmware."""
+        """Get firmware version."""
         return self.qsha_data.firmware
 
     def login(self) -> bool:
@@ -419,44 +419,44 @@ class QSHA:
         self._login = False
 
     def mac_addr(self) -> str:
-        """MAC address."""
+        """Get MAC address."""
         return self.qsha_data.mac
 
     def model(self) -> str:
-        """Product model."""
+        """Get product model."""
         return self.qsha_data.model
 
     def product(self) -> str:
-        """Product name."""
+        """Get product name."""
         return self.qsha_data.product
 
     def serial(self) -> str:
-        """Serial number."""
+        """Get serial number."""
         _serial = self.qsha_data.serial
         if _serial:
             return re.sub(r"[\W_]+", "", _serial)
         return None
 
     def temp(self) -> int:
-        """Current temperature."""
+        """Get current temperature."""
         return self.qsha_data.temp
 
     def temp_max(self) -> int:
-        """Max temperature."""
+        """Get max temperature."""
         return self.qsha_data.temp_max
 
     def update(self) -> bool:
-        """Firmware update."""
+        """Get firmware update."""
         return self.qsha_data.update
 
     def update_version(self) -> str:
-        """Firmware update version."""
+        """Get firmware update version."""
         return self.qsha_data.update_version
 
     def uptime(self) -> datetime:
-        """Uptime."""
+        """Get uptime."""
         return self.qsha_data.uptime
 
     def uptime_seconds(self) -> int:
-        """Uptime seconds."""
+        """Get uptime seconds."""
         return self.qsha_data.uptime_seconds
