@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Home Assistant client for the QNAP QSW API."""
 
+import logging
 import re
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
@@ -8,6 +9,7 @@ from http import HTTPStatus
 from .const import (
     ATTR_ANOMALY,
     ATTR_ERROR_CODE,
+    ATTR_ERROR_MESSAGE,
     ATTR_FAN1SPEED,
     ATTR_FAN2SPEED,
     ATTR_MAC,
@@ -44,6 +46,8 @@ from .const import (
     UPTIME_DELTA,
 )
 from .interface import QSA, QSAException
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LoginError(Exception):
@@ -236,6 +240,11 @@ class QSHA:
                     elif firmware_condition[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'firmware/condition: ERROR[%s]="%s"',
+                            {firmware_condition[ATTR_ERROR_CODE]},
+                            {firmware_condition[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
@@ -248,6 +257,11 @@ class QSHA:
                     elif firmware_info[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'firmware/info: ERROR[%s]="%s"',
+                            {firmware_info[ATTR_ERROR_CODE]},
+                            {firmware_info[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
@@ -260,6 +274,11 @@ class QSHA:
                     elif firmware_update[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'firmware/update/check: ERROR[%s]="%s"',
+                            {firmware_update[ATTR_ERROR_CODE]},
+                            {firmware_update[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
@@ -272,6 +291,11 @@ class QSHA:
                     elif system_board[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'system/board: ERROR[%s]="%s"',
+                            {system_board[ATTR_ERROR_CODE]},
+                            {system_board[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
@@ -284,6 +308,11 @@ class QSHA:
                     elif system_sensor[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'system/sensor: ERROR[%s]="%s"',
+                            {system_sensor[ATTR_ERROR_CODE]},
+                            {system_sensor[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
@@ -297,6 +326,11 @@ class QSHA:
                     elif system_time[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                         logout = True
                     else:
+                        _LOGGER.warning(
+                            'system/time: ERROR[%s]="%s"',
+                            {system_time[ATTR_ERROR_CODE]},
+                            {system_time[ATTR_ERROR_MESSAGE]},
+                        )
                         error = True
             except QSAException:
                 error = True
