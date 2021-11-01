@@ -20,6 +20,7 @@ from .const import (
     ATTR_NUM_PORTS,
     ATTR_NUMBER,
     ATTR_PRODUCT,
+    ATTR_PUB_DATE,
     ATTR_REBOOT,
     ATTR_RESULT,
     ATTR_SERIAL,
@@ -34,6 +35,8 @@ from .const import (
     DATA_FAN2_SPEED,
     DATA_FAN_COUNT,
     DATA_FIRMWARE_CURRENT_VERSION,
+    DATA_FIRMWARE_DATETIME,
+    DATA_FIRMWARE_DATETIME_ISOFORMAT,
     DATA_FIRMWARE_LATEST_VERSION,
     DATA_FIRMWARE_UPDATE,
     DATA_PORTS_COUNT,
@@ -116,16 +119,21 @@ class QSHADataFirmware:
     """Class for keeping track of QSW firmware."""
 
     current_version: str = None
+    datetime: datetime = None
     update: bool = False
     latest_version: str = None
 
     def data(self):
         """Get data Dict."""
-        return {
+        _data = {
             DATA_FIRMWARE_CURRENT_VERSION: self.current_version,
+            DATA_FIRMWARE_DATETIME: self.datetime,
             DATA_FIRMWARE_LATEST_VERSION: self.latest_version,
             DATA_FIRMWARE_UPDATE: self.update,
         }
+        if self.datetime:
+            _data[DATA_FIRMWARE_DATETIME_ISOFORMAT] = self.datetime.isoformat()
+        return _data
 
 
 @dataclass
@@ -224,6 +232,9 @@ class QSHAData:
         self.firmware.current_version = (
             f"{firmware_info[ATTR_RESULT][ATTR_VERSION]}."
             f"{firmware_info[ATTR_RESULT][ATTR_NUMBER]}"
+        )
+        self.firmware.datetime = datetime.strptime(
+            firmware_info[ATTR_RESULT][ATTR_PUB_DATE], "%a, %d %b %Y %H:%M:%S %z"
         )
 
     def set_firmware_update(self, firmware_update):
