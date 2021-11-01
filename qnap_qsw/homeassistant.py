@@ -14,6 +14,8 @@ from .const import (
     ATTR_ERROR_MESSAGE,
     ATTR_FAN1SPEED,
     ATTR_FAN2SPEED,
+    ATTR_KEY,
+    ATTR_LINK,
     ATTR_MAC,
     ATTR_MESSAGE,
     ATTR_MODEL,
@@ -28,6 +30,7 @@ from .const import (
     ATTR_TEMP,
     ATTR_TEMP_MAX,
     ATTR_UPTIME,
+    ATTR_VAL,
     ATTR_VERSION,
     DATA_CONDITION_ANOMALY,
     DATA_CONDITION_MESSAGE,
@@ -41,6 +44,7 @@ from .const import (
     DATA_FIRMWARE_DOWNLOAD_URL,
     DATA_FIRMWARE_LATEST_VERSION,
     DATA_FIRMWARE_UPDATE,
+    DATA_PORTS_ACTIVE,
     DATA_PORTS_COUNT,
     DATA_SYSTEM_MAC_ADDR,
     DATA_SYSTEM_MODEL,
@@ -146,11 +150,13 @@ class QSHADataFirmware:
 class QSHADataPorts:
     """Class for keeping track of QSW ports."""
 
+    active: int = None
     count: int = None
 
     def data(self):
         """Get data Dict."""
         return {
+            DATA_PORTS_ACTIVE: self.active,
             DATA_PORTS_COUNT: self.count,
         }
 
@@ -262,6 +268,14 @@ class QSHAData:
             )
         else:
             self.firmware.latest_version = None
+
+    def set_ports_status(self, ports_status):
+        """Set ports/status data."""
+        active = 0
+        for port in ports_status[ATTR_RESULT]:
+            if int(port[ATTR_KEY]) <= self.ports.count and port[ATTR_VAL][ATTR_LINK]:
+                active = active + 1
+        self.ports.active = active
 
     def set_system_board(self, system_board):
         """Set system/board data."""
@@ -399,6 +413,17 @@ class QSHA:
                 "firmware/update/check", firmware_update
             ):
                 self.qsha_data.set_firmware_update(firmware_update)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_ports_status(self):
+        """Update ports/status from QNAP QSW API."""
+        try:
+            ports_status = self.qsa.get_ports_status()
+            if ports_status and self.api_response("ports/status", ports_status):
+                self.qsha_data.set_ports_status(ports_status)
                 return True
             return False
         except QSAException as err:
