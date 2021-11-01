@@ -47,7 +47,7 @@ from .const import (
     DATA_TEMPERATURE_CURRENT,
     DATA_TEMPERATURE_MAXIMUM,
     DATA_UPTIME_DATETIME,
-    DATA_UPTIME_ISOFORMAT,
+    DATA_UPTIME_DATETIME_ISOFORMAT,
     DATA_UPTIME_SECONDS,
     UPTIME_DELTA,
 )
@@ -120,8 +120,8 @@ class QSHADataFirmware:
 
     current_version: str = None
     datetime: datetime = None
-    update: bool = False
     latest_version: str = None
+    update: bool = False
 
     def data(self):
         """Get data Dict."""
@@ -133,6 +133,8 @@ class QSHADataFirmware:
         }
         if self.datetime:
             _data[DATA_FIRMWARE_DATETIME_ISOFORMAT] = self.datetime.isoformat()
+        else:
+            _data[DATA_FIRMWARE_DATETIME_ISOFORMAT] = None
         return _data
 
 
@@ -199,11 +201,15 @@ class QSHADataUptime:
 
     def data(self):
         """Get data Dict."""
-        return {
+        _data = {
             DATA_UPTIME_DATETIME: self.datetime,
-            DATA_UPTIME_ISOFORMAT: self.datetime.isoformat(),
             DATA_UPTIME_SECONDS: self.seconds,
         }
+        if self.datetime:
+            _data[DATA_UPTIME_DATETIME_ISOFORMAT] = self.datetime.isoformat()
+        else:
+            _data[DATA_UPTIME_DATETIME_ISOFORMAT] = None
+        return _data
 
 
 @dataclass

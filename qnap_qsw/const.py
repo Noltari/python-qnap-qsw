@@ -56,7 +56,7 @@ DATA_SYSTEM_SERIAL = "system_serial"
 DATA_TEMPERATURE_CURRENT = "temperature_current"
 DATA_TEMPERATURE_MAXIMUM = "temperature_maximum"
 DATA_UPTIME_DATETIME = "uptime_datetime"
-DATA_UPTIME_ISOFORMAT = "uptime_isoformat"
+DATA_UPTIME_DATETIME_ISOFORMAT = "uptime_datetime_isoformat"
 DATA_UPTIME_SECONDS = "uptime_seconds"
 
 UPTIME_DELTA = 5
