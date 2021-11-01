@@ -9,6 +9,7 @@ from http import HTTPStatus
 
 from .const import (
     ATTR_ANOMALY,
+    ATTR_DOWNLOAD_URL,
     ATTR_ERROR_CODE,
     ATTR_ERROR_MESSAGE,
     ATTR_FAN1SPEED,
@@ -37,6 +38,7 @@ from .const import (
     DATA_FIRMWARE_CURRENT_VERSION,
     DATA_FIRMWARE_DATETIME,
     DATA_FIRMWARE_DATETIME_ISOFORMAT,
+    DATA_FIRMWARE_DOWNLOAD_URL,
     DATA_FIRMWARE_LATEST_VERSION,
     DATA_FIRMWARE_UPDATE,
     DATA_PORTS_COUNT,
@@ -120,6 +122,7 @@ class QSHADataFirmware:
 
     current_version: str = None
     datetime: datetime = None
+    download_url: str = None
     latest_version: str = None
     update: bool = False
 
@@ -128,6 +131,7 @@ class QSHADataFirmware:
         _data = {
             DATA_FIRMWARE_CURRENT_VERSION: self.current_version,
             DATA_FIRMWARE_DATETIME: self.datetime,
+            DATA_FIRMWARE_DOWNLOAD_URL: self.download_url,
             DATA_FIRMWARE_LATEST_VERSION: self.latest_version,
             DATA_FIRMWARE_UPDATE: self.update,
         }
@@ -242,6 +246,11 @@ class QSHAData:
         self.firmware.datetime = datetime.strptime(
             firmware_info[ATTR_RESULT][ATTR_PUB_DATE], "%a, %d %b %Y %H:%M:%S %z"
         )
+        download_url = firmware_info[ATTR_RESULT][ATTR_DOWNLOAD_URL]
+        if isinstance(download_url, list):
+            self.firmware.download_url = download_url[0]
+        else:
+            self.firmware.download_url = download_url
 
     def set_firmware_update(self, firmware_update):
         """Set firmware/update data."""
