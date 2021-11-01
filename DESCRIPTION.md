@@ -21,12 +21,3 @@ _qsa.login(user="admin", password="password")
 _qsa.get_system_board()
 _qsa.get_system_sensor()
 _qsa.logout()
-
->>> import asyncio
-from qnap_qsw.homeassistant import QSHA
-_qsha = QSHA(host="host/url", user="admin", password="password")
-asyncio.run(_qsha.async_identify())
-print(_qsha.data())
-asyncio.run(_qsha.async_update())
-print(_qsha.data())
-asyncio.run(_qsha.async_reboot())
