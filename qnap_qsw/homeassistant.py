@@ -261,16 +261,14 @@ class QSHAData:
     def set_system_time(self, system_time, utcnow):
         """Set system/time data."""
         self.uptime.seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
+        uptime = (utcnow - timedelta(seconds=self.uptime.seconds)).replace(
+            microsecond=0, tzinfo=timezone.utc
+        )
         if self.uptime.datetime:
-            new_uptime = (utcnow - timedelta(seconds=self.uptime.seconds)).replace(
-                microsecond=0, tzinfo=timezone.utc
-            )
-            if abs((new_uptime - self.uptime.datetime).total_seconds()) > UPTIME_DELTA:
-                self.uptime.datetime = new_uptime
+            if abs((uptime - self.uptime.datetime).total_seconds()) > UPTIME_DELTA:
+                self.uptime.datetime = uptime
         else:
-            self.uptime.datetime = (
-                utcnow - timedelta(seconds=self.uptime.seconds)
-            ).replace(microsecond=0, tzinfo=timezone.utc)
+            self.uptime.datetime = uptime
 
 
 class QSHA:
