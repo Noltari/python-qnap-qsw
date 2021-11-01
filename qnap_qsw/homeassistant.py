@@ -212,74 +212,65 @@ class QSHAData:
 
     def set_firmware_condition(self, firmware_condition):
         """Set firmware/condition data."""
-        if firmware_condition:
-            self.condition.anomaly = firmware_condition[ATTR_RESULT][ATTR_ANOMALY]
-            _msg = firmware_condition[ATTR_RESULT][ATTR_MESSAGE]
-            if self.condition.anomaly and _msg and len(_msg) > 0:
-                self.condition.message = _msg
-            else:
-                self.condition.message = None
+        self.condition.anomaly = firmware_condition[ATTR_RESULT][ATTR_ANOMALY]
+        _msg = firmware_condition[ATTR_RESULT][ATTR_MESSAGE]
+        if self.condition.anomaly and _msg and len(_msg) > 0:
+            self.condition.message = _msg
+        else:
+            self.condition.message = None
 
     def set_firmware_info(self, firmware_info):
         """Set firmware/info data."""
-        if firmware_info:
-            self.firmware.current_version = (
-                f"{firmware_info[ATTR_RESULT][ATTR_VERSION]}."
-                f"{firmware_info[ATTR_RESULT][ATTR_NUMBER]}"
-            )
+        self.firmware.current_version = (
+            f"{firmware_info[ATTR_RESULT][ATTR_VERSION]}."
+            f"{firmware_info[ATTR_RESULT][ATTR_NUMBER]}"
+        )
 
     def set_firmware_update(self, firmware_update):
         """Set firmware/update data."""
-        if firmware_update:
-            self.firmware.update = firmware_update[ATTR_RESULT][ATTR_NEWER]
-            if self.firmware.update:
-                self.firmware.latest_version = (
-                    f"{firmware_update[ATTR_RESULT][ATTR_VERSION]}."
-                    f"{firmware_update[ATTR_RESULT][ATTR_NUMBER]}"
-                )
-            else:
-                self.firmware.latest_version = None
+        self.firmware.update = firmware_update[ATTR_RESULT][ATTR_NEWER]
+        if self.firmware.update:
+            self.firmware.latest_version = (
+                f"{firmware_update[ATTR_RESULT][ATTR_VERSION]}."
+                f"{firmware_update[ATTR_RESULT][ATTR_NUMBER]}"
+            )
+        else:
+            self.firmware.latest_version = None
 
     def set_system_board(self, system_board):
         """Set system/board data."""
-        if system_board:
-            self.system.mac_addr = system_board[ATTR_RESULT][ATTR_MAC]
-            self.system.model = system_board[ATTR_RESULT][ATTR_MODEL]
-            self.ports.count = system_board[ATTR_RESULT][ATTR_NUM_PORTS]
-            self.system.product = system_board[ATTR_RESULT][ATTR_PRODUCT]
-            self.system.serial = system_board[ATTR_RESULT][ATTR_SERIAL]
+        self.system.mac_addr = system_board[ATTR_RESULT][ATTR_MAC]
+        self.system.model = system_board[ATTR_RESULT][ATTR_MODEL]
+        self.ports.count = system_board[ATTR_RESULT][ATTR_NUM_PORTS]
+        self.system.product = system_board[ATTR_RESULT][ATTR_PRODUCT]
+        self.system.serial = system_board[ATTR_RESULT][ATTR_SERIAL]
 
     def set_system_sensor(self, system_sensor):
         """Set system/sensor data."""
-        if system_sensor:
-            if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] >= 0:
-                self.fans.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
-            else:
-                self.fans.fan_speed[0] = None
-            if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
-                self.fans.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
-            else:
-                self.fans.fan_speed[1] = None
-            self.temperature.current = system_sensor[ATTR_RESULT][ATTR_TEMP]
-            self.temperature.maximum = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
+        if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] >= 0:
+            self.fans.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
+        else:
+            self.fans.fan_speed[0] = None
+        if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
+            self.fans.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
+        else:
+            self.fans.fan_speed[1] = None
+        self.temperature.current = system_sensor[ATTR_RESULT][ATTR_TEMP]
+        self.temperature.maximum = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
 
     def set_system_time(self, system_time, utcnow):
         """Set system/time data."""
-        if system_time:
-            self.uptime.seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
-            if self.uptime.datetime:
-                new_uptime = (utcnow - timedelta(seconds=self.uptime.seconds)).replace(
-                    microsecond=0, tzinfo=timezone.utc
-                )
-                if (
-                    abs((new_uptime - self.uptime.datetime).total_seconds())
-                    > UPTIME_DELTA
-                ):
-                    self.uptime.datetime = new_uptime
-            else:
-                self.uptime.datetime = (
-                    utcnow - timedelta(seconds=self.uptime.seconds)
-                ).replace(microsecond=0, tzinfo=timezone.utc)
+        self.uptime.seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
+        if self.uptime.datetime:
+            new_uptime = (utcnow - timedelta(seconds=self.uptime.seconds)).replace(
+                microsecond=0, tzinfo=timezone.utc
+            )
+            if abs((new_uptime - self.uptime.datetime).total_seconds()) > UPTIME_DELTA:
+                self.uptime.datetime = new_uptime
+        else:
+            self.uptime.datetime = (
+                utcnow - timedelta(seconds=self.uptime.seconds)
+            ).replace(microsecond=0, tzinfo=timezone.utc)
 
 
 class QSHA:
