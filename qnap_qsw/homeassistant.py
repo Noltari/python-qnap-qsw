@@ -252,11 +252,6 @@ class QSHAData:
         self.firmware.datetime = datetime.strptime(
             firmware_info[ATTR_RESULT][ATTR_PUB_DATE], "%a, %d %b %Y %H:%M:%S %z"
         )
-        download_url = firmware_info[ATTR_RESULT][ATTR_DOWNLOAD_URL]
-        if isinstance(download_url, list):
-            self.firmware.download_url = download_url[0]
-        else:
-            self.firmware.download_url = download_url
 
     def set_firmware_update(self, firmware_update):
         """Set firmware/update data."""
@@ -268,6 +263,12 @@ class QSHAData:
             )
         else:
             self.firmware.latest_version = None
+
+        download_url = firmware_update[ATTR_RESULT][ATTR_DOWNLOAD_URL]
+        if isinstance(download_url, list):
+            self.firmware.download_url = download_url[0]
+        else:
+            self.firmware.download_url = download_url
 
     def set_ports_status(self, ports_status):
         """Set ports/status data."""
