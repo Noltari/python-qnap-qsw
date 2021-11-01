@@ -3,6 +3,7 @@
 
 import logging
 import re
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 
@@ -32,16 +33,18 @@ from .const import (
     DATA_FAN1_SPEED,
     DATA_FAN2_SPEED,
     DATA_FAN_COUNT,
-    DATA_FIRMWARE,
-    DATA_MAC_ADDR,
-    DATA_MODEL,
-    DATA_PRODUCT,
-    DATA_SERIAL,
-    DATA_TEMP,
-    DATA_TEMP_MAX,
-    DATA_UPDATE,
-    DATA_UPDATE_VERSION,
-    DATA_UPTIME,
+    DATA_FIRMWARE_CURRENT_VERSION,
+    DATA_FIRMWARE_LATEST_VERSION,
+    DATA_FIRMWARE_UPDATE,
+    DATA_PORTS_COUNT,
+    DATA_SYSTEM_MAC_ADDR,
+    DATA_SYSTEM_MODEL,
+    DATA_SYSTEM_PRODUCT,
+    DATA_SYSTEM_SERIAL,
+    DATA_TEMPERATURE_CURRENT,
+    DATA_TEMPERATURE_MAXIMUM,
+    DATA_UPTIME_DATETIME,
+    DATA_UPTIME_ISOFORMAT,
     DATA_UPTIME_SECONDS,
     UPTIME_DELTA,
 )
@@ -59,42 +62,168 @@ class LoginError(Exception):
         self.status = status
 
 
+@dataclass
+class QSHADataCondition:
+    """Class for keeping track of QSW condition."""
+
+    anomaly: bool = False
+    message: str = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_CONDITION_ANOMALY: self.anomaly,
+            DATA_CONDITION_MESSAGE: self.message,
+        }
+
+
+@dataclass
+class QSHADataFans:
+    """Class for keeping track of QSW fans."""
+
+    fan_count: int = None
+    fan_speed: list[int] = field(default_factory=lambda: [None] * 2)
+
+    def data(self):
+        """Get data Dict."""
+        _count = self.count()
+        _data = {
+            DATA_FAN_COUNT: _count,
+        }
+        if _count > 0:
+            _data[DATA_FAN1_SPEED] = self.speed(0)
+        if _count > 1:
+            _data[DATA_FAN2_SPEED] = self.speed(1)
+        return _data
+
+    def count(self) -> int:
+        """Get number of fans."""
+        _count = 0
+        for fan in self.fan_speed:
+            if fan:
+                _count = _count + 1
+        return _count
+
+    def speed(self, idx) -> int:
+        """Get fan speed."""
+        if idx > len(self.fan_speed):
+            return None
+        return self.fan_speed[idx]
+
+
+@dataclass
+class QSHADataFirmware:
+    """Class for keeping track of QSW firmware."""
+
+    current_version: str = None
+    update: bool = False
+    latest_version: str = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_FIRMWARE_CURRENT_VERSION: self.current_version,
+            DATA_FIRMWARE_LATEST_VERSION: self.latest_version,
+            DATA_FIRMWARE_UPDATE: self.update,
+        }
+
+
+@dataclass
+class QSHADataPorts:
+    """Class for keeping track of QSW ports."""
+
+    count: int = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_PORTS_COUNT: self.count,
+        }
+
+
+@dataclass
+class QSHADataSystem:
+    """Class for keeping track of QSW system."""
+
+    mac_addr: str = None
+    model: str = None
+    product: str = None
+    serial: str = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_SYSTEM_MAC_ADDR: self.mac_addr,
+            DATA_SYSTEM_MODEL: self.model,
+            DATA_SYSTEM_PRODUCT: self.product,
+            DATA_SYSTEM_SERIAL: self.serial_str(),
+        }
+
+    def serial_str(self) -> str:
+        """Get serial number."""
+        serial = self.serial
+        if serial:
+            return re.sub(r"[\W_]+", "", serial)
+        return None
+
+
+@dataclass
+class QSHADataTemperature:
+    """Class for keeping track of QSW temperature."""
+
+    current: int = None
+    maximum: int = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_TEMPERATURE_CURRENT: self.current,
+            DATA_TEMPERATURE_MAXIMUM: self.maximum,
+        }
+
+
+@dataclass
+class QSHADataUptime:
+    """Class for keeping track of QSW uptime."""
+
+    datetime: datetime = None
+    seconds: int = None
+
+    def data(self):
+        """Get data Dict."""
+        return {
+            DATA_UPTIME_DATETIME: self.datetime,
+            DATA_UPTIME_ISOFORMAT: self.datetime.isoformat(),
+            DATA_UPTIME_SECONDS: self.seconds,
+        }
+
+
+@dataclass
 class QSHAData:
     """Stores data from QNAP QSW API for Home Assistant."""
 
-    # pylint: disable=R0902
-    def __init__(self):
-        """Init QNAP QSW data for Home Assistant."""
-        self.condition_anomaly = False
-        self.condition_message = None
-        self.firmware = None
-        self.fan_speed = [None] * 2
-        self.mac = None
-        self.model = None
-        self.num_ports = None
-        self.product = None
-        self.serial = None
-        self.temp = None
-        self.temp_max = None
-        self.update = False
-        self.update_version = None
-        self.uptime = None
-        self.uptime_seconds = None
+    condition = QSHADataCondition()
+    fans = QSHADataFans()
+    firmware = QSHADataFirmware()
+    ports = QSHADataPorts()
+    system = QSHADataSystem()
+    temperature = QSHADataTemperature()
+    uptime = QSHADataUptime()
 
     def set_firmware_condition(self, firmware_condition):
         """Set firmware/condition data."""
         if firmware_condition:
-            self.condition_anomaly = firmware_condition[ATTR_RESULT][ATTR_ANOMALY]
+            self.condition.anomaly = firmware_condition[ATTR_RESULT][ATTR_ANOMALY]
             _msg = firmware_condition[ATTR_RESULT][ATTR_MESSAGE]
-            if self.condition_anomaly and _msg and len(_msg) > 0:
-                self.condition_message = _msg
+            if self.condition.anomaly and _msg and len(_msg) > 0:
+                self.condition.message = _msg
             else:
-                self.condition_message = None
+                self.condition.message = None
 
     def set_firmware_info(self, firmware_info):
         """Set firmware/info data."""
         if firmware_info:
-            self.firmware = (
+            self.firmware.current_version = (
                 f"{firmware_info[ATTR_RESULT][ATTR_VERSION]}."
                 f"{firmware_info[ATTR_RESULT][ATTR_NUMBER]}"
             )
@@ -102,55 +231,57 @@ class QSHAData:
     def set_firmware_update(self, firmware_update):
         """Set firmware/update data."""
         if firmware_update:
-            self.update = firmware_update[ATTR_RESULT][ATTR_NEWER]
-            if self.update:
-                self.update_version = (
+            self.firmware.update = firmware_update[ATTR_RESULT][ATTR_NEWER]
+            if self.firmware.update:
+                self.firmware.latest_version = (
                     f"{firmware_update[ATTR_RESULT][ATTR_VERSION]}."
                     f"{firmware_update[ATTR_RESULT][ATTR_NUMBER]}"
                 )
             else:
-                self.update_version = None
+                self.firmware.latest_version = None
 
     def set_system_board(self, system_board):
         """Set system/board data."""
         if system_board:
-            self.mac = system_board[ATTR_RESULT][ATTR_MAC]
-            self.model = system_board[ATTR_RESULT][ATTR_MODEL]
-            self.num_ports = system_board[ATTR_RESULT][ATTR_NUM_PORTS]
-            self.product = system_board[ATTR_RESULT][ATTR_PRODUCT]
-            self.serial = system_board[ATTR_RESULT][ATTR_SERIAL]
+            self.system.mac_addr = system_board[ATTR_RESULT][ATTR_MAC]
+            self.system.model = system_board[ATTR_RESULT][ATTR_MODEL]
+            self.ports.count = system_board[ATTR_RESULT][ATTR_NUM_PORTS]
+            self.system.product = system_board[ATTR_RESULT][ATTR_PRODUCT]
+            self.system.serial = system_board[ATTR_RESULT][ATTR_SERIAL]
 
     def set_system_sensor(self, system_sensor):
         """Set system/sensor data."""
         if system_sensor:
             if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] >= 0:
-                self.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
+                self.fans.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
             else:
-                self.fan_speed[0] = None
+                self.fans.fan_speed[0] = None
             if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
-                self.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
+                self.fans.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
             else:
-                self.fan_speed[1] = None
-            self.temp = system_sensor[ATTR_RESULT][ATTR_TEMP]
-            self.temp_max = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
+                self.fans.fan_speed[1] = None
+            self.temperature.current = system_sensor[ATTR_RESULT][ATTR_TEMP]
+            self.temperature.maximum = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
 
     def set_system_time(self, system_time, utcnow):
         """Set system/time data."""
         if system_time:
-            self.uptime_seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
-            if self.uptime:
-                new_uptime = (utcnow - timedelta(seconds=self.uptime_seconds)).replace(
+            self.uptime.seconds = system_time[ATTR_RESULT][ATTR_UPTIME]
+            if self.uptime.datetime:
+                new_uptime = (utcnow - timedelta(seconds=self.uptime.seconds)).replace(
                     microsecond=0, tzinfo=timezone.utc
                 )
-                if abs((new_uptime - self.uptime).total_seconds()) > UPTIME_DELTA:
-                    self.uptime = new_uptime
+                if (
+                    abs((new_uptime - self.uptime.datetime).total_seconds())
+                    > UPTIME_DELTA
+                ):
+                    self.uptime.datetime = new_uptime
             else:
-                self.uptime = (utcnow - timedelta(seconds=self.uptime_seconds)).replace(
-                    microsecond=0, tzinfo=timezone.utc
-                )
+                self.uptime.datetime = (
+                    utcnow - timedelta(seconds=self.uptime.seconds)
+                ).replace(microsecond=0, tzinfo=timezone.utc)
 
 
-# pylint: disable=R0904
 class QSHA:
     """Gathers data from QNAP QSW API for Home Assistant."""
 
@@ -177,14 +308,6 @@ class QSHA:
             return False
         return True
 
-    def condition_anomaly(self) -> bool:
-        """Get condition anomaly."""
-        return self.qsha_data.condition_anomaly
-
-    def condition_message(self) -> str:
-        """Get condition message."""
-        return self.qsha_data.condition_message
-
     def config_url(self) -> str:
         """Get configuration URL."""
         return self.qsa.config_url()
@@ -192,48 +315,16 @@ class QSHA:
     def data(self):
         """Get data Dict."""
         _data = {
-            DATA_CONDITION_ANOMALY: self.condition_anomaly(),
-            DATA_CONDITION_MESSAGE: self.condition_message(),
             DATA_CONFIG_URL: self.config_url(),
-            DATA_FAN_COUNT: self.fan_count(),
-            DATA_FIRMWARE: self.firmware(),
-            DATA_MAC_ADDR: self.mac_addr(),
-            DATA_MODEL: self.model(),
-            DATA_PRODUCT: self.product(),
-            DATA_SERIAL: self.serial(),
-            DATA_TEMP: self.temp(),
-            DATA_TEMP_MAX: self.temp_max(),
-            DATA_UPDATE: self.update(),
-            DATA_UPDATE_VERSION: self.update_version(),
-            DATA_UPTIME: self.uptime(),
-            DATA_UPTIME_SECONDS: self.uptime_seconds(),
         }
-
-        if self.fan_count() > 0:
-            _data[DATA_FAN1_SPEED] = self.fan_speed(0)
-        if self.fan_count() > 1:
-            _data[DATA_FAN2_SPEED] = self.fan_speed(1)
-
+        _data.update(self.qsha_data.condition.data())
+        _data.update(self.qsha_data.fans.data())
+        _data.update(self.qsha_data.firmware.data())
+        _data.update(self.qsha_data.ports.data())
+        _data.update(self.qsha_data.system.data())
+        _data.update(self.qsha_data.uptime.data())
+        _data.update(self.qsha_data.temperature.data())
         return _data
-
-    def fan_count(self) -> int:
-        """Get number of fans."""
-        fans = self.qsha_data.fan_speed
-        count = 0
-        for fan in fans:
-            if fan:
-                count = count + 1
-        return count
-
-    def fan_speed(self, idx) -> int:
-        """Get fan speed."""
-        if idx > len(self.qsha_data.fan_speed):
-            return None
-        return self.qsha_data.fan_speed[idx]
-
-    def firmware(self) -> str:
-        """Get firmware version."""
-        return self.qsha_data.firmware
 
     def login(self) -> bool:
         """Login."""
@@ -248,18 +339,6 @@ class QSHA:
             self.qsa.logout()
         self._login = False
 
-    def mac_addr(self) -> str:
-        """Get MAC address."""
-        return self.qsha_data.mac
-
-    def model(self) -> str:
-        """Get product model."""
-        return self.qsha_data.model
-
-    def product(self) -> str:
-        """Get product name."""
-        return self.qsha_data.product
-
     def reboot(self):
         """Reboot QNAP QSW switch."""
         if self.login():
@@ -272,29 +351,6 @@ class QSHA:
                 return True
 
         return False
-
-    def serial(self) -> str:
-        """Get serial number."""
-        _serial = self.qsha_data.serial
-        if _serial:
-            return re.sub(r"[\W_]+", "", _serial)
-        return None
-
-    def temp(self) -> int:
-        """Get current temperature."""
-        return self.qsha_data.temp
-
-    def temp_max(self) -> int:
-        """Get max temperature."""
-        return self.qsha_data.temp_max
-
-    def update(self) -> bool:
-        """Get firmware update."""
-        return self.qsha_data.update
-
-    def update_version(self) -> str:
-        """Get firmware update version."""
-        return self.qsha_data.update_version
 
     def update_firmware_condition(self):
         """Update firmware/condition from QNAP QSW API."""
@@ -366,11 +422,3 @@ class QSHA:
             return False
         except QSAException as err:
             raise ConnectionError from err
-
-    def uptime(self) -> datetime:
-        """Get uptime."""
-        return self.qsha_data.uptime
-
-    def uptime_seconds(self) -> int:
-        """Get uptime seconds."""
-        return self.qsha_data.uptime_seconds
