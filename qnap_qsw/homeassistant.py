@@ -3,7 +3,7 @@
 
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 
@@ -91,7 +91,7 @@ class QSHADataFans:
     """Class for keeping track of QSW fans."""
 
     fan_count: int = None
-    fan_speed: list[int] = field(default_factory=lambda: [None] * 2)
+    fan_speed: list[int] = None
 
     def data(self):
         """Get data Dict."""
@@ -108,10 +108,18 @@ class QSHADataFans:
     def count(self) -> int:
         """Get number of fans."""
         _count = 0
-        for fan in self.fan_speed:
-            if fan:
-                _count = _count + 1
+        if self.fan_speed:
+            for fan in self.fan_speed:
+                if fan:
+                    _count = _count + 1
         return _count
+
+    def set_speed(self, idx, speed) -> int:
+        """Set fan speed."""
+        if not self.fan_speed:
+            self.fan_speed = [None] * 2
+        if idx < len(self.fan_speed):
+            self.fan_speed[idx] = speed
 
     def speed(self, idx) -> int:
         """Get fan speed."""
@@ -289,13 +297,13 @@ class QSHAData:
     def set_system_sensor(self, system_sensor):
         """Set system/sensor data."""
         if system_sensor[ATTR_RESULT][ATTR_FAN1SPEED] >= 0:
-            self.fans.fan_speed[0] = system_sensor[ATTR_RESULT][ATTR_FAN1SPEED]
+            self.fans.set_speed(0, system_sensor[ATTR_RESULT][ATTR_FAN1SPEED])
         else:
-            self.fans.fan_speed[0] = None
+            self.fans.set_speed(0, None)
         if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
-            self.fans.fan_speed[1] = system_sensor[ATTR_RESULT][ATTR_FAN2SPEED]
+            self.fans.set_speed(1, system_sensor[ATTR_RESULT][ATTR_FAN1SPEED])
         else:
-            self.fans.fan_speed[1] = None
+            self.fans.set_speed(1, None)
         self.temperature.current = system_sensor[ATTR_RESULT][ATTR_TEMP]
         self.temperature.maximum = system_sensor[ATTR_RESULT][ATTR_TEMP_MAX]
 
