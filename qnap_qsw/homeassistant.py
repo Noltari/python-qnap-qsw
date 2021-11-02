@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
+from typing import List
 
 from .const import (
     ATTR_ANOMALY,
@@ -91,7 +92,7 @@ class QSHADataFans:
     """Class for keeping track of QSW fans."""
 
     fan_count: int = None
-    fan_speed: list[int] = None
+    fan_speed: List[int] = None
 
     def data(self):
         """Get data Dict."""
