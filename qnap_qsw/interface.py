@@ -261,6 +261,10 @@ class QSA:
         """Get system web config."""
         return self.api_call("system/web/config")
 
+    def get_users_verification(self):
+        """Get users verification."""
+        return self.api_call("users/verification")
+
     def get_vlan(self):
         """Get VLAN."""
         return self.api_call("vlan")
@@ -278,7 +282,7 @@ class QSA:
             ATTR_USERNAME: user,
             ATTR_PASSWORD: b64_pass,
         }
-        response = self.api_call("users/login", method="POST", json=json)
+        response = self.post_users_login(json)
 
         if not response:
             return None
@@ -296,7 +300,8 @@ class QSA:
 
     def logout(self):
         """User logout."""
-        response = self.api_call("users/exit", method="POST", json={})
+        json = {}
+        response = self.post_users_exit(json)
 
         self.api_key = None
         if self.cookies and API_QSW_ID in self.cookies:
@@ -310,6 +315,14 @@ class QSA:
         """Post system command."""
         json = {ATTR_COMMAND: command}
         return self.api_call("system/command", method="POST", json=json)
+
+    def post_users_exit(self, json):
+        """Post users exit."""
+        return self.api_call("users/exit", method="POST", json=json)
+
+    def post_users_login(self, json):
+        """Post users login."""
+        return self.api_call("users/login", method="POST", json=json)
 
     def put_user_password(self, user, password):
         """Put user password."""
