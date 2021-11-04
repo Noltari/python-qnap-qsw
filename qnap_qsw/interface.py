@@ -17,8 +17,6 @@ from .const import (
     API_QSW_LANG,
     API_TIMEOUT,
     API_URI,
-    API_URI_FULL,
-    API_URI_V1,
     API_VERIFY,
     ATTR_COMMAND,
     ATTR_DATA,
@@ -53,10 +51,8 @@ class QSA:
             _host = f"http://{_host}"
         if _host.endswith("/"):
             _host = _host[:-1]
-        if _host.endswith(API_URI):
-            _host = f"{_host}/{API_URI_V1}"
-        if not _host.endswith(API_URI_FULL):
-            _host = f"{_host}/{API_URI_FULL}"
+        if not _host.endswith(API_URI):
+            _host = f"{_host}/{API_URI}"
         self.api_url = _host
         self.api_key = None
         self.cookies = {API_QSW_LANG: "ENG"}
@@ -98,176 +94,182 @@ class QSA:
                 response.text,
             )
 
-        str_response = response.text
-        if str_response is None or str_response == "":
-            return None
-
         try:
-            return response.json()
+            result = response.json()
         except ValueError:
-            return str_response
+            result = None
+
+        return result
 
     def config_url(self):
         """Config URL."""
-        return self.api_url[: self.api_url.rfind(API_URI_FULL)]
+        return self.api_url[: self.api_url.rfind(API_URI)]
 
     def debugging(self, debug):
         """Enable/Disable debugging."""
         self.debug = debug
         return self.debug
 
+    def get_about(self):
+        """Get API about."""
+        return self.api_call("about")
+
     def get_acl_ip(self):
         """Get ACL IP."""
-        return self.api_call("acl/ip")
+        return self.api_call("v1/acl/ip")
 
     def get_acl_ports(self):
         """Get ACL ports."""
-        return self.api_call("acl/ports")
+        return self.api_call("v1/acl/ports")
 
     def get_dns_server(self):
         """Get IPv4 route status."""
-        return self.api_call("dns/server")
+        return self.api_call("v1/dns/server")
 
     def get_firmware_condition(self):
         """Get firmware condition."""
-        return self.api_call("firmware/condition")
+        return self.api_call("v1/firmware/condition")
 
     def get_firmware_info(self):
         """Get firmware info."""
-        return self.api_call("firmware/info")
+        return self.api_call("v1/firmware/info")
 
     def get_firmware_update_check(self):
         """Get firmware update check."""
-        return self.api_call("firmware/update/check")
+        return self.api_call("v1/firmware/update/check")
 
     def get_igmp(self):
         """Get IGMP."""
-        return self.api_call("igmp")
+        return self.api_call("v1/igmp")
 
     def get_igmp_port_interface(self):
         """Get IGMP port interface."""
-        return self.api_call("igmp/port/interface")
+        return self.api_call("v1/igmp/port/interface")
 
     def get_igmp_vlan_interface(self):
         """Get IGMP VLAN interface."""
-        return self.api_call("igmp/vlan/interface")
+        return self.api_call("v1/igmp/vlan/interface")
 
     def get_ipv4_interface(self):
         """Get IPv4 interface."""
-        return self.api_call("ip/ipv4/interface")
+        return self.api_call("v1/ip/ipv4/interface")
 
     def get_ipv4_interface_status(self):
         """Get IPv4 interface status."""
-        return self.api_call("ip/ipv4/interface/status")
+        return self.api_call("v1/ip/ipv4/interface/status")
 
     def get_ipv4_route_status(self):
         """Get IPv4 route status."""
-        return self.api_call("ip/ipv4/route/status")
+        return self.api_call("v1/ip/ipv4/route/status")
 
     def get_lacp_group(self):
         """Get LACP group."""
-        return self.api_call("lacp/group")
+        return self.api_call("v1/lacp/group")
 
     def get_lacp_info(self):
         """Get LACP info."""
-        return self.api_call("lacp/info")
+        return self.api_call("v1/lacp/info")
+
+    def get_live(self):
+        """Get API live."""
+        return self.api_call("live")
 
     def get_lldp(self):
         """Get LLDP."""
-        return self.api_call("lldp")
+        return self.api_call("v1/lldp")
 
     def get_lldp_port_interface(self):
         """Get LLDP interface."""
-        return self.api_call("lldp/interface")
+        return self.api_call("v1/lldp/interface")
 
     def get_ports(self):
         """Get ports."""
-        return self.api_call("ports")
+        return self.api_call("v1/ports")
 
     def get_ports_resource(self):
         """Get ports resource."""
-        return self.api_call("ports/resource")
+        return self.api_call("v1/ports/resource")
 
     def get_ports_status(self):
         """Get ports status."""
-        return self.api_call("ports/status")
+        return self.api_call("v1/ports/status")
 
     def get_qos_default(self):
         """Get QoS default."""
-        return self.api_call("qos/default")
+        return self.api_call("v1/qos/default")
 
     def get_qos_mode(self):
         """Get QoS mode."""
-        return self.api_call("qos/mode")
+        return self.api_call("v1/qos/mode")
 
     def get_rstp(self):
         """Get RSTP."""
-        return self.api_call("rstp")
+        return self.api_call("v1/rstp")
 
     def get_rstp_interface(self):
         """Get RSTP interface."""
-        return self.api_call("rstp/interface")
+        return self.api_call("v1/rstp/interface")
 
     def get_rstp_interface_role(self):
         """Get RSTP interface role."""
-        response = self.api_call("rstp/interface/role")
+        response = self.api_call("v1/rstp/interface/role")
         return response
 
     def get_rstp_interface_state(self):
         """Get RSTP interface state."""
-        return self.api_call("rstp/interface/state")
+        return self.api_call("v1/rstp/interface/state")
 
     def get_rstp_priority(self):
         """Get RSTP interface."""
-        return self.api_call("rstp/priority")
+        return self.api_call("v1/rstp/priority")
 
     def get_sntp(self):
         """Get SNTP."""
-        return self.api_call("sntp")
+        return self.api_call("v1/sntp")
 
     def get_sntp_timezone(self):
         """Get SNTP timezone."""
-        return self.api_call("sntp/timezone")
+        return self.api_call("v1/sntp/timezone")
 
     def get_system_board(self):
         """Get system board."""
-        return self.api_call("system/board")
+        return self.api_call("v1/system/board")
 
     def get_system_config(self):
         """Get system config."""
-        return self.api_call("system/config")
+        return self.api_call("v1/system/config")
 
     def get_system_clock(self):
         """Get system clock."""
-        return self.api_call("system/clock")
+        return self.api_call("v1/system/clock")
 
     def get_system_https(self):
         """Get system https."""
-        return self.api_call("system/https")
+        return self.api_call("v1/system/https")
 
     def get_system_info(self):
         """Get system info."""
-        return self.api_call("system/info")
+        return self.api_call("v1/system/info")
 
     def get_system_sensor(self):
         """Get system sensor."""
-        return self.api_call("system/sensor")
+        return self.api_call("v1/system/sensor")
 
     def get_system_time(self):
         """Get system time."""
-        return self.api_call("system/time")
+        return self.api_call("v1/system/time")
 
     def get_system_web_config(self):
         """Get system web config."""
-        return self.api_call("system/web/config")
+        return self.api_call("v1/system/web/config")
 
     def get_users_verification(self):
         """Get users verification."""
-        return self.api_call("users/verification")
+        return self.api_call("v1/users/verification")
 
     def get_vlan(self):
         """Get VLAN."""
-        return self.api_call("vlan")
+        return self.api_call("v1/vlan")
 
     def login(self, user, password):
         """User login."""
@@ -314,17 +316,17 @@ class QSA:
     def post_system_command(self, command):
         """Post system command."""
         json = {ATTR_COMMAND: command}
-        return self.api_call("system/command", method="POST", json=json)
+        return self.api_call("v1/system/command", method="POST", json=json)
 
     def post_users_exit(self, json):
         """Post users exit."""
-        return self.api_call("users/exit", method="POST", json=json)
+        return self.api_call("v1/users/exit", method="POST", json=json)
 
     def post_users_login(self, json):
         """Post users login."""
-        return self.api_call("users/login", method="POST", json=json)
+        return self.api_call("v1/users/login", method="POST", json=json)
 
     def put_user_password(self, user, password):
         """Put user password."""
         json = {ATTR_IDX: user, ATTR_DATA: {ATTR_PASSWORD: password}}
-        return self.api_call("users", method="PUT", json=json)
+        return self.api_call("v1/users", method="PUT", json=json)
