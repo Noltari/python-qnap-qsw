@@ -15,6 +15,7 @@ from .const import (
     ATTR_ERROR_MESSAGE,
     ATTR_FAN1SPEED,
     ATTR_FAN2SPEED,
+    ATTR_FULL_DUPLEX_STATUS,
     ATTR_KEY,
     ATTR_LINK,
     ATTR_MAC,
@@ -28,6 +29,7 @@ from .const import (
     ATTR_REBOOT,
     ATTR_RESULT,
     ATTR_SERIAL,
+    ATTR_SPEED,
     ATTR_TEMP,
     ATTR_TEMP_MAX,
     ATTR_UPTIME,
@@ -47,6 +49,14 @@ from .const import (
     DATA_FIRMWARE_UPDATE,
     DATA_PORTS_ACTIVE,
     DATA_PORTS_COUNT,
+    DATA_PORTS_DUPLEX_FULL,
+    DATA_PORTS_DUPLEX_HALF,
+    DATA_PORTS_SPEED_10,
+    DATA_PORTS_SPEED_100,
+    DATA_PORTS_SPEED_1000,
+    DATA_PORTS_SPEED_2500,
+    DATA_PORTS_SPEED_5000,
+    DATA_PORTS_SPEED_10000,
     DATA_SYSTEM_MAC_ADDR,
     DATA_SYSTEM_MODEL,
     DATA_SYSTEM_PRODUCT,
@@ -156,18 +166,91 @@ class QSHADataFirmware:
 
 
 @dataclass
+class QSHADataPortStatus:
+    """Class for keeping track of QSW port status."""
+
+    full_duplex: bool = False
+    link: bool = False
+    speed: int = 0
+
+
+@dataclass
 class QSHADataPorts:
     """Class for keeping track of QSW ports."""
 
-    active: int = None
     count: int = None
+    port_status: dict = None
 
     def data(self) -> dict:
         """Get data Dict."""
         return {
-            DATA_PORTS_ACTIVE: self.active,
+            DATA_PORTS_ACTIVE: self.active(),
             DATA_PORTS_COUNT: self.count,
+            DATA_PORTS_DUPLEX_FULL: self.duplex(True),
+            DATA_PORTS_DUPLEX_HALF: self.duplex(False),
+            DATA_PORTS_SPEED_10: self.speed(10),
+            DATA_PORTS_SPEED_100: self.speed(100),
+            DATA_PORTS_SPEED_1000: self.speed(1000),
+            DATA_PORTS_SPEED_2500: self.speed(2500),
+            DATA_PORTS_SPEED_5000: self.speed(5000),
+            DATA_PORTS_SPEED_10000: self.speed(10000),
         }
+
+    def active(self) -> int:
+        """Get active ports."""
+        count = 0
+        if self.count and self.port_status:
+            for key, val in self.port_status.items():
+                if key <= self.count and val.link:
+                    count = count + 1
+        return count
+
+    def duplex(self, full_duplex: bool) -> int:
+        """Get ports with specific duplex."""
+        count = 0
+        if self.count and self.port_status:
+            for key, val in self.port_status.items():
+                if key <= self.count and val.link and val.full_duplex == full_duplex:
+                    count = count + 1
+        return count
+
+    def speed(self, speed: int) -> int:
+        """Get ports with specific speed."""
+        count = 0
+        if self.count and self.port_status:
+            for key, val in self.port_status.items():
+                if key <= self.count and val.link and val.speed == speed:
+                    count = count + 1
+        return count
+
+    def set_port_status(self, port_status):
+        """Set port status."""
+        _port_status = QSHADataPortStatus()
+
+        try:
+            key = int(port_status[ATTR_KEY])
+        except ValueError:
+            key = -1
+        try:
+            _port_status.full_duplex = bool(
+                port_status[ATTR_VAL][ATTR_FULL_DUPLEX_STATUS]
+            )
+        except ValueError:
+            _port_status.full_duplex = False
+        try:
+            _port_status.link = bool(port_status[ATTR_VAL][ATTR_LINK])
+        except ValueError:
+            _port_status.link = False
+        try:
+            _port_status.speed = int(port_status[ATTR_VAL][ATTR_SPEED])
+        except ValueError:
+            _port_status.speed = 0
+
+        if not self.port_status:
+            self.port_status = {}
+
+        if key >= 0:
+            self.port_status[key] = _port_status
 
 
 @dataclass
@@ -293,11 +376,8 @@ class QSHAData:
 
     def set_ports_status(self, ports_status):
         """Set ports/status data."""
-        active = 0
         for port in ports_status[ATTR_RESULT]:
-            if int(port[ATTR_KEY]) <= self.ports.count and port[ATTR_VAL][ATTR_LINK]:
-                active = active + 1
-        self.ports.active = active
+            self.ports.set_port_status(port)
 
     def set_system_board(self, system_board):
         """Set system/board data."""
