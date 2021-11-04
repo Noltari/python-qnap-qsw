@@ -16,6 +16,7 @@ from .const import (
     ATTR_FAN1SPEED,
     ATTR_FAN2SPEED,
     ATTR_FULL_DUPLEX_STATUS,
+    ATTR_HOSTNAME,
     ATTR_KEY,
     ATTR_LINK,
     ATTR_MAC,
@@ -57,6 +58,7 @@ from .const import (
     DATA_PORTS_SPEED_2500,
     DATA_PORTS_SPEED_5000,
     DATA_PORTS_SPEED_10000,
+    DATA_SYSTEM_HOSTNAME,
     DATA_SYSTEM_MAC_ADDR,
     DATA_SYSTEM_MODEL,
     DATA_SYSTEM_PRODUCT,
@@ -257,6 +259,7 @@ class QSHADataPorts:
 class QSHADataSystem:
     """Class for keeping track of QSW system."""
 
+    hostname: str = None
     mac_addr: str = None
     model: str = None
     product: str = None
@@ -265,6 +268,7 @@ class QSHADataSystem:
     def data(self) -> dict:
         """Get data Dict."""
         return {
+            DATA_SYSTEM_HOSTNAME: self.hostname,
             DATA_SYSTEM_MAC_ADDR: self.mac_addr,
             DATA_SYSTEM_MODEL: self.model,
             DATA_SYSTEM_PRODUCT: self.product,
@@ -386,6 +390,10 @@ class QSHAData:
         self.ports.count = system_board[ATTR_RESULT][ATTR_NUM_PORTS]
         self.system.product = system_board[ATTR_RESULT][ATTR_PRODUCT]
         self.system.serial = system_board[ATTR_RESULT][ATTR_SERIAL]
+
+    def set_system_info(self, system_info):
+        """Set system/info data."""
+        self.system.hostname = system_info[ATTR_RESULT][ATTR_HOSTNAME]
 
     def set_system_sensor(self, system_sensor):
         """Set system/sensor data."""
@@ -558,6 +566,17 @@ class QSHA:
             system_board = self.qsa.get_system_board()
             if system_board and self.api_response("system/board", system_board):
                 self.qsha_data.set_system_board(system_board)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_system_info(self) -> bool:
+        """Update system/info from QNAP QSW API."""
+        try:
+            system_info = self.qsa.get_system_info()
+            if system_info and self.api_response("system/info", system_info):
+                self.qsha_data.set_system_info(system_info)
                 return True
             return False
         except QSAException as err:
