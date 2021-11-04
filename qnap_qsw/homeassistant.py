@@ -367,6 +367,10 @@ class QSHA:
 
     def login(self) -> bool:
         """Login."""
+        if self._login:
+            result = self.qsa.get_users_verification()
+            if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
+                self.logout()
         if not self._login:
             if self.qsa.login(self.user, self.password):
                 self._login = True
