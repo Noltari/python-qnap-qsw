@@ -114,6 +114,10 @@ class QSA:
         """Get API about."""
         return self.api_call("about")
 
+    def get_acl_mac(self):
+        """Get ACL mac."""
+        return self.api_call("v1/acl/mac")
+
     def get_acl_ip(self):
         """Get ACL IP."""
         return self.api_call("v1/acl/ip")
@@ -123,7 +127,7 @@ class QSA:
         return self.api_call("v1/acl/ports")
 
     def get_dns_server(self):
-        """Get IPv4 route status."""
+        """Get DNS server."""
         return self.api_call("v1/dns/server")
 
     def get_firmware_condition(self):
@@ -134,13 +138,25 @@ class QSA:
         """Get firmware info."""
         return self.api_call("v1/firmware/info")
 
+    def get_firmware_update(self):
+        """Get firmware update."""
+        return self.api_call("v1/firmware/update")
+
     def get_firmware_update_check(self):
         """Get firmware update check."""
         return self.api_call("v1/firmware/update/check")
 
+    def get_firmware_status(self):
+        """Get firmware update status."""
+        return self.api_call("v1/firmware/status")
+
     def get_igmp(self):
         """Get IGMP."""
         return self.api_call("v1/igmp")
+
+    def get_igmp_group_status(self):
+        """Get IGMP group status."""
+        return self.api_call("v1/igmp/group/status")
 
     def get_igmp_port_interface(self):
         """Get IGMP port interface."""
@@ -178,13 +194,37 @@ class QSA:
         """Get LLDP."""
         return self.api_call("v1/lldp")
 
-    def get_lldp_port_interface(self):
+    def get_lldp_interface(self):
         """Get LLDP interface."""
         return self.api_call("v1/lldp/interface")
+
+    def get_lldp_neighbors_status(self):
+        """Get LLDP neighbors status."""
+        return self.api_call("v1/lldp/neighbors/status")
+
+    def get_mac(self):
+        """Get mac FDB status."""
+        return self.api_call("v1/mac")
+
+    def get_mac_fdb_status(self):
+        """Get mac FDB status."""
+        return self.api_call("v1/mac/fdb/status")
+
+    def get_mirror(self):
+        """Get mirror."""
+        return self.api_call("v1/mirror")
 
     def get_ports(self):
         """Get ports."""
         return self.api_call("v1/ports")
+
+    def get_ports_ethernet(self):
+        """Get ports ethernet."""
+        return self.api_call("v1/ports/ethernet")
+
+    def get_ports_fec(self):
+        """Get ports FEC."""
+        return self.api_call("v1/ports/fec")
 
     def get_ports_resource(self):
         """Get ports resource."""
@@ -194,6 +234,14 @@ class QSA:
         """Get ports status."""
         return self.api_call("v1/ports/status")
 
+    def get_ports_statistics(self):
+        """Get ports statistics."""
+        return self.api_call("v1/ports/statistics")
+
+    def get_ports_transceiver(self):
+        """Get ports transceiver."""
+        return self.api_call("v1/ports/transceiver")
+
     def get_qos_default(self):
         """Get QoS default."""
         return self.api_call("v1/qos/default")
@@ -201,6 +249,10 @@ class QSA:
     def get_qos_mode(self):
         """Get QoS mode."""
         return self.api_call("v1/qos/mode")
+
+    def get_qos_pcp(self):
+        """Get QoS PCP."""
+        return self.api_call("v1/qos/pcp")
 
     def get_rstp(self):
         """Get RSTP."""
@@ -226,6 +278,14 @@ class QSA:
     def get_sntp(self):
         """Get SNTP."""
         return self.api_call("v1/sntp")
+
+    def get_sntp_server(self):
+        """Get SNTP server."""
+        return self.api_call("v1/sntp/server")
+
+    def get_sntp_status(self):
+        """Get SNTP status."""
+        return self.api_call("v1/sntp/status")
 
     def get_sntp_timezone(self):
         """Get SNTP timezone."""
@@ -270,6 +330,10 @@ class QSA:
     def get_vlan(self):
         """Get VLAN."""
         return self.api_call("v1/vlan")
+
+    def get_vlan_indexs(self):
+        """Get VLAN indexs."""
+        return self.api_call("v1/vlan/indexs")
 
     def login(self, user, password):
         """User login."""
