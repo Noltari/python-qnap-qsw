@@ -115,7 +115,7 @@ class QSHADataFans:
                     _count = _count + 1
         return _count
 
-    def set_speed(self, idx, speed) -> int:
+    def set_speed(self, idx, speed):
         """Set fan speed."""
         if not self.fan_speed:
             self.fan_speed = [None] * 2
