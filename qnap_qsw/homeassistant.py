@@ -491,6 +491,19 @@ class QSHA:
 
         return False
 
+    def update_all(self) -> bool:
+        """Update all info from QNAP QSW API."""
+        result = self.login()
+        if result:
+            result |= self.update_firmware_condition()
+            result |= self.update_firmware_info()
+            result |= self.update_firmware_update_check()
+            result |= self.update_ports_status()
+            result |= self.update_system_board()
+            result |= self.update_system_sensor()
+            result |= self.update_system_time()
+        return result
+
     def update_firmware_condition(self) -> bool:
         """Update firmware/condition from QNAP QSW API."""
         try:
