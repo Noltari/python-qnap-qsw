@@ -79,7 +79,7 @@ class QSHADataCondition:
     anomaly: bool = False
     message: str = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         return {
             DATA_CONDITION_ANOMALY: self.anomaly,
@@ -94,7 +94,7 @@ class QSHADataFans:
     fan_count: int = None
     fan_speed: List[int] = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         _count = self.count()
         _data = {
@@ -139,7 +139,7 @@ class QSHADataFirmware:
     latest_version: str = None
     update: bool = False
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         _data = {
             DATA_FIRMWARE_CURRENT_VERSION: self.current_version,
@@ -162,7 +162,7 @@ class QSHADataPorts:
     active: int = None
     count: int = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         return {
             DATA_PORTS_ACTIVE: self.active,
@@ -179,7 +179,7 @@ class QSHADataSystem:
     product: str = None
     serial: str = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         return {
             DATA_SYSTEM_MAC_ADDR: self.mac_addr,
@@ -203,7 +203,7 @@ class QSHADataTemperature:
     current: int = None
     maximum: int = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         return {
             DATA_TEMPERATURE_CURRENT: self.current,
@@ -218,7 +218,7 @@ class QSHADataUptime:
     datetime: datetime = None
     seconds: int = None
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
         _data = {
             DATA_UPTIME_DATETIME: self.datetime,
@@ -242,6 +242,18 @@ class QSHAData:
     system = QSHADataSystem()
     temperature = QSHADataTemperature()
     uptime = QSHADataUptime()
+
+    def data(self) -> dict:
+        """Get data Dict."""
+        _data = {}
+        _data.update(self.condition.data())
+        _data.update(self.fans.data())
+        _data.update(self.firmware.data())
+        _data.update(self.ports.data())
+        _data.update(self.system.data())
+        _data.update(self.uptime.data())
+        _data.update(self.temperature.data())
+        return _data
 
     def set_firmware_condition(self, firmware_condition):
         """Set firmware/condition data."""
@@ -363,18 +375,10 @@ class QSHA:
         """Get configuration URL."""
         return self.qsa.config_url()
 
-    def data(self):
+    def data(self) -> dict:
         """Get data Dict."""
-        _data = {
-            DATA_CONFIG_URL: self.config_url(),
-        }
-        _data.update(self.qsha_data.condition.data())
-        _data.update(self.qsha_data.fans.data())
-        _data.update(self.qsha_data.firmware.data())
-        _data.update(self.qsha_data.ports.data())
-        _data.update(self.qsha_data.system.data())
-        _data.update(self.qsha_data.uptime.data())
-        _data.update(self.qsha_data.temperature.data())
+        _data = self.qsha_data.data()
+        _data.update({DATA_CONFIG_URL: self.config_url()})
         return _data
 
     def login(self) -> bool:
