@@ -356,7 +356,7 @@ class QSHA:
         except QSAException:
             return False
 
-    def api_response(self, cmd, result):
+    def api_response(self, cmd, result) -> bool:
         """Process response from QNAP QSW API."""
         if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
             self.logout()
@@ -398,7 +398,7 @@ class QSHA:
             self.qsa.logout()
         self._login = False
 
-    def reboot(self):
+    def reboot(self) -> bool:
         """Reboot QNAP QSW switch."""
         if self.login():
             response = self.qsa.post_system_command(ATTR_REBOOT)
@@ -411,7 +411,7 @@ class QSHA:
 
         return False
 
-    def update_firmware_condition(self):
+    def update_firmware_condition(self) -> bool:
         """Update firmware/condition from QNAP QSW API."""
         try:
             firmware_condition = self.qsa.get_firmware_condition()
@@ -424,7 +424,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_firmware_info(self):
+    def update_firmware_info(self) -> bool:
         """Update firmware/info from QNAP QSW API."""
         try:
             firmware_info = self.qsa.get_firmware_info()
@@ -435,7 +435,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_firmware_update_check(self):
+    def update_firmware_update_check(self) -> bool:
         """Update firmware/update/check from QNAP QSW API."""
         try:
             firmware_update = self.qsa.get_firmware_update_check()
@@ -448,7 +448,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_ports_status(self):
+    def update_ports_status(self) -> bool:
         """Update ports/status from QNAP QSW API."""
         try:
             ports_status = self.qsa.get_ports_status()
@@ -459,7 +459,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_system_board(self):
+    def update_system_board(self) -> bool:
         """Update system/board from QNAP QSW API."""
         try:
             system_board = self.qsa.get_system_board()
@@ -470,7 +470,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_system_sensor(self):
+    def update_system_sensor(self) -> bool:
         """Update system/sensor from QNAP QSW API."""
         try:
             system_sensor = self.qsa.get_system_sensor()
@@ -481,7 +481,7 @@ class QSHA:
         except QSAException as err:
             raise ConnectionError from err
 
-    def update_system_time(self):
+    def update_system_time(self) -> bool:
         """Update system/time from QNAP QSW API."""
         try:
             system_time = self.qsa.get_system_time()
