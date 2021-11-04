@@ -332,6 +332,18 @@ class QSHA:
         self.qsha_data = QSHAData()
         self._login = False
 
+    def api_alive(self) -> bool:
+        """Check if QNAP QSW API is alive."""
+        try:
+            result = self.qsa.get_live()
+            return bool(
+                result
+                and (result[ATTR_ERROR_CODE] == HTTPStatus.OK)
+                and (result[ATTR_RESULT] is None)
+            )
+        except QSAException:
+            return False
+
     def api_response(self, cmd, result):
         """Process response from QNAP QSW API."""
         if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
