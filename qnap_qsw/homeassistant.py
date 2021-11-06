@@ -410,7 +410,7 @@ class QSHAData:
         else:
             self.fans.set_speed(0, None)
         if system_sensor[ATTR_RESULT][ATTR_FAN2SPEED] >= 0:
-            self.fans.set_speed(1, system_sensor[ATTR_RESULT][ATTR_FAN1SPEED])
+            self.fans.set_speed(1, system_sensor[ATTR_RESULT][ATTR_FAN2SPEED])
         else:
             self.fans.set_speed(1, None)
         self.temperature.current = system_sensor[ATTR_RESULT][ATTR_TEMP]
