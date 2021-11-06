@@ -338,8 +338,8 @@ class QSHAData:
         _data.update(self.firmware.data())
         _data.update(self.ports.data())
         _data.update(self.system.data())
-        _data.update(self.uptime.data())
         _data.update(self.temperature.data())
+        _data.update(self.uptime.data())
         return _data
 
     def set_firmware_condition(self, firmware_condition):
