@@ -75,4 +75,5 @@ DATA_UPTIME_DATETIME = "uptime_datetime"
 DATA_UPTIME_DATETIME_ISOFORMAT = "uptime_datetime_isoformat"
 DATA_UPTIME_SECONDS = "uptime_seconds"
 
+FIRMWARE_INFO_DT_FORMATS = ("%a, %d %b %Y %H:%M:%S %z", "%a, %d, %b %Y %H:%M:%S %z")
 UPTIME_DELTA = 5

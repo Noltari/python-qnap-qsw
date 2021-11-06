@@ -68,6 +68,7 @@ from .const import (
     DATA_UPTIME_DATETIME,
     DATA_UPTIME_DATETIME_ISOFORMAT,
     DATA_UPTIME_SECONDS,
+    FIRMWARE_INFO_DT_FORMATS,
     UPTIME_DELTA,
 )
 from .interface import QSA, QSAException
@@ -357,9 +358,16 @@ class QSHAData:
             f"{firmware_info[ATTR_RESULT][ATTR_VERSION]}."
             f"{firmware_info[ATTR_RESULT][ATTR_NUMBER]}"
         )
-        self.firmware.datetime = datetime.strptime(
-            firmware_info[ATTR_RESULT][ATTR_PUB_DATE], "%a, %d %b %Y %H:%M:%S %z"
-        )
+        dt_value = None
+        for dt_format in FIRMWARE_INFO_DT_FORMATS:
+            try:
+                dt_value = datetime.strptime(
+                    firmware_info[ATTR_RESULT][ATTR_PUB_DATE], dt_format
+                )
+                break
+            except ValueError:
+                pass
+        self.firmware.datetime = dt_value
 
     def set_firmware_update(self, firmware_update):
         """Set firmware/update data."""
