@@ -426,25 +426,13 @@ class QSHA:
 
     def __init__(self, host, user, password):
         """Init QNAP QSW API for Home Assistant."""
-        self.user = user
-        self.password = password
         self.qsa = QSA(host)
-        self.qsha_data = QSHAData()
-        self._login = False
+        self.__user = user
+        self.__password = password
+        self.__data = QSHAData()
+        self.__login = False
 
-    def api_alive(self) -> bool:
-        """Check if QNAP QSW API is alive."""
-        try:
-            result = self.qsa.get_live()
-            return bool(
-                result
-                and (result[ATTR_ERROR_CODE] == HTTPStatus.OK)
-                and (result[ATTR_RESULT] is None)
-            )
-        except QSAException:
-            return False
-
-    def api_response(self, cmd, result) -> bool:
+    def __api_response(self, cmd, result) -> bool:
         """Process response from QNAP QSW API."""
         if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
             self.logout()
@@ -459,32 +447,44 @@ class QSHA:
             return False
         return True
 
+    def api_alive(self) -> bool:
+        """Check if QNAP QSW API is alive."""
+        try:
+            result = self.qsa.get_live()
+            return bool(
+                result
+                and (result[ATTR_ERROR_CODE] == HTTPStatus.OK)
+                and (result[ATTR_RESULT] is None)
+            )
+        except QSAException:
+            return False
+
     def config_url(self) -> str:
         """Get configuration URL."""
         return self.qsa.config_url()
 
     def data(self) -> dict:
         """Get data Dict."""
-        _data = self.qsha_data.data()
+        _data = self.__data.data()
         _data.update({DATA_CONFIG_URL: self.config_url()})
         return _data
 
     def login(self) -> bool:
         """Login."""
-        if self._login:
+        if self.__login:
             result = self.qsa.get_users_verification()
             if result[ATTR_ERROR_CODE] == HTTPStatus.UNAUTHORIZED:
                 self.logout()
-        if not self._login:
-            if self.qsa.login(self.user, self.password):
-                self._login = True
-        return self._login
+        if not self.__login:
+            if self.qsa.login(self.__user, self.__password):
+                self.__login = True
+        return self.__login
 
     def logout(self):
         """Logout."""
-        if self._login:
+        if self.__login:
             self.qsa.logout()
-        self._login = False
+        self.__login = False
 
     def reboot(self) -> bool:
         """Reboot QNAP QSW switch."""
@@ -516,10 +516,10 @@ class QSHA:
         """Update firmware/condition from QNAP QSW API."""
         try:
             firmware_condition = self.qsa.get_firmware_condition()
-            if firmware_condition and self.api_response(
+            if firmware_condition and self.__api_response(
                 "firmware/condition", firmware_condition
             ):
-                self.qsha_data.set_firmware_condition(firmware_condition)
+                self.__data.set_firmware_condition(firmware_condition)
                 return True
             return False
         except QSAException as err:
@@ -529,8 +529,8 @@ class QSHA:
         """Update firmware/info from QNAP QSW API."""
         try:
             firmware_info = self.qsa.get_firmware_info()
-            if firmware_info and self.api_response("firmware/info", firmware_info):
-                self.qsha_data.set_firmware_info(firmware_info)
+            if firmware_info and self.__api_response("firmware/info", firmware_info):
+                self.__data.set_firmware_info(firmware_info)
                 return True
             return False
         except QSAException as err:
@@ -540,10 +540,10 @@ class QSHA:
         """Update firmware/update/check from QNAP QSW API."""
         try:
             firmware_update = self.qsa.get_firmware_update_check()
-            if firmware_update and self.api_response(
+            if firmware_update and self.__api_response(
                 "firmware/update/check", firmware_update
             ):
-                self.qsha_data.set_firmware_update(firmware_update)
+                self.__data.set_firmware_update(firmware_update)
                 return True
             return False
         except QSAException as err:
@@ -553,8 +553,8 @@ class QSHA:
         """Update ports/status from QNAP QSW API."""
         try:
             ports_status = self.qsa.get_ports_status()
-            if ports_status and self.api_response("ports/status", ports_status):
-                self.qsha_data.set_ports_status(ports_status)
+            if ports_status and self.__api_response("ports/status", ports_status):
+                self.__data.set_ports_status(ports_status)
                 return True
             return False
         except QSAException as err:
@@ -564,8 +564,8 @@ class QSHA:
         """Update system/board from QNAP QSW API."""
         try:
             system_board = self.qsa.get_system_board()
-            if system_board and self.api_response("system/board", system_board):
-                self.qsha_data.set_system_board(system_board)
+            if system_board and self.__api_response("system/board", system_board):
+                self.__data.set_system_board(system_board)
                 return True
             return False
         except QSAException as err:
@@ -575,8 +575,8 @@ class QSHA:
         """Update system/info from QNAP QSW API."""
         try:
             system_info = self.qsa.get_system_info()
-            if system_info and self.api_response("system/info", system_info):
-                self.qsha_data.set_system_info(system_info)
+            if system_info and self.__api_response("system/info", system_info):
+                self.__data.set_system_info(system_info)
                 return True
             return False
         except QSAException as err:
@@ -586,8 +586,8 @@ class QSHA:
         """Update system/sensor from QNAP QSW API."""
         try:
             system_sensor = self.qsa.get_system_sensor()
-            if system_sensor and self.api_response("system/sensor", system_sensor):
-                self.qsha_data.set_system_sensor(system_sensor)
+            if system_sensor and self.__api_response("system/sensor", system_sensor):
+                self.__data.set_system_sensor(system_sensor)
                 return True
             return False
         except QSAException as err:
@@ -598,8 +598,8 @@ class QSHA:
         try:
             system_time = self.qsa.get_system_time()
             utcnow = datetime.utcnow()
-            if system_time and self.api_response("system/time", system_time):
-                self.qsha_data.set_system_time(system_time, utcnow)
+            if system_time and self.__api_response("system/time", system_time):
+                self.__data.set_system_time(system_time, utcnow)
                 return True
             return False
         except QSAException as err:
