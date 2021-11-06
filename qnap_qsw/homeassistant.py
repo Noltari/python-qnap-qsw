@@ -29,10 +29,13 @@ from .const import (
     ATTR_PUB_DATE,
     ATTR_REBOOT,
     ATTR_RESULT,
+    ATTR_RX_ERRORS,
+    ATTR_RX_OCTETS,
     ATTR_SERIAL,
     ATTR_SPEED,
     ATTR_TEMP,
     ATTR_TEMP_MAX,
+    ATTR_TX_OCTETS,
     ATTR_UPTIME,
     ATTR_VAL,
     ATTR_VERSION,
@@ -49,9 +52,14 @@ from .const import (
     DATA_FIRMWARE_LATEST_VERSION,
     DATA_FIRMWARE_UPDATE,
     DATA_PORTS_ACTIVE,
+    DATA_PORTS_BPS_RX,
+    DATA_PORTS_BPS_TX,
     DATA_PORTS_COUNT,
     DATA_PORTS_DUPLEX_FULL,
     DATA_PORTS_DUPLEX_HALF,
+    DATA_PORTS_ERRORS_RX,
+    DATA_PORTS_OCTETS_RX,
+    DATA_PORTS_OCTETS_TX,
     DATA_PORTS_SPEED_10,
     DATA_PORTS_SPEED_100,
     DATA_PORTS_SPEED_1000,
@@ -69,6 +77,7 @@ from .const import (
     DATA_UPTIME_DATETIME_ISOFORMAT,
     DATA_UPTIME_SECONDS,
     FIRMWARE_INFO_DT_FORMATS,
+    OCTET_BITS,
     UPTIME_DELTA,
 )
 from .interface import QSA, QSAException
@@ -169,6 +178,16 @@ class QSHADataFirmware:
 
 
 @dataclass
+class QSHADataPortStatistics:
+    """Class for keeping track of QSW port statistics."""
+
+    rx_errors: int = 0
+    rx_octets: int = 0
+    tx_octets: int = 0
+    datetime: datetime = None
+
+
+@dataclass
 class QSHADataPortStatus:
     """Class for keeping track of QSW port status."""
 
@@ -183,6 +202,10 @@ class QSHADataPorts:
 
     count: int = None
     port_status: dict = None
+    statistics_cur: dict = None
+    statistics_cur_dt: datetime = None
+    statistics_pre: dict = None
+    statistics_pre_dt: datetime = None
 
     def data(self) -> dict:
         """Get data Dict."""
@@ -191,6 +214,11 @@ class QSHADataPorts:
             DATA_PORTS_COUNT: self.count,
             DATA_PORTS_DUPLEX_FULL: self.duplex(True),
             DATA_PORTS_DUPLEX_HALF: self.duplex(False),
+            DATA_PORTS_BPS_RX: self.rx_bps(),
+            DATA_PORTS_BPS_TX: self.tx_bps(),
+            DATA_PORTS_ERRORS_RX: self.rx_errors(),
+            DATA_PORTS_OCTETS_RX: self.rx_octets(),
+            DATA_PORTS_OCTETS_TX: self.tx_octets(),
             DATA_PORTS_SPEED_10: self.speed(10),
             DATA_PORTS_SPEED_100: self.speed(100),
             DATA_PORTS_SPEED_1000: self.speed(1000),
@@ -198,6 +226,21 @@ class QSHADataPorts:
             DATA_PORTS_SPEED_5000: self.speed(5000),
             DATA_PORTS_SPEED_10000: self.speed(10000),
         }
+
+    def __statistics_seconds(self) -> int:
+        if self.statistics_cur_dt and self.statistics_pre_dt:
+            seconds = (self.statistics_cur_dt - self.statistics_pre_dt).total_seconds()
+        else:
+            seconds = 0
+        return seconds
+
+    def __calc_bps(self, cur_octets, pre_octets) -> int:
+        seconds = self.__statistics_seconds()
+        if seconds > 0:
+            bps = ((cur_octets - pre_octets) * OCTET_BITS) / seconds
+        else:
+            bps = 0
+        return int(bps)
 
     def active(self) -> int:
         """Get active ports."""
@@ -217,6 +260,49 @@ class QSHADataPorts:
                     count = count + 1
         return count
 
+    def rx_errors(self) -> int:
+        """Get RX errors."""
+        errors = 0
+        if self.count and self.statistics_cur:
+            for key, val in self.statistics_cur.items():
+                if key <= self.count:
+                    errors = errors + val.rx_errors
+        return errors
+
+    def rx_octets(self, current=True) -> int:
+        """Get RX octets."""
+        if current:
+            _statistics = self.statistics_cur
+        else:
+            _statistics = self.statistics_pre
+        octets = 0
+        if self.count and _statistics:
+            for key, val in _statistics.items():
+                if key <= self.count:
+                    octets = octets + val.rx_octets
+        return octets
+
+    def rx_bps(self) -> int:
+        """Get RX bit/s."""
+        return self.__calc_bps(self.rx_octets(True), self.rx_octets(False))
+
+    def tx_octets(self, current=True) -> int:
+        """Get TX octets."""
+        if current:
+            _statistics = self.statistics_cur
+        else:
+            _statistics = self.statistics_pre
+        octets = 0
+        if self.count and _statistics:
+            for key, val in _statistics.items():
+                if key <= self.count:
+                    octets = octets + val.tx_octets
+        return octets
+
+    def tx_bps(self) -> int:
+        """Get TX bit/s."""
+        return self.__calc_bps(self.tx_octets(True), self.tx_octets(False))
+
     def speed(self, speed: int) -> int:
         """Get ports with specific speed."""
         count = 0
@@ -225,6 +311,45 @@ class QSHADataPorts:
                 if key <= self.count and val.link and val.speed == speed:
                     count = count + 1
         return count
+
+    def set_port_statistics(self, statistics):
+        """Set port statistics."""
+        _statistics = QSHADataPortStatistics()
+
+        try:
+            key = int(statistics[ATTR_KEY])
+        except ValueError:
+            key = -1
+
+        try:
+            _statistics.rx_errors = int(statistics[ATTR_VAL][ATTR_RX_ERRORS])
+        except ValueError:
+            _statistics.rx_errors = 0
+
+        try:
+            _statistics.rx_octets = int(statistics[ATTR_VAL][ATTR_RX_OCTETS])
+        except ValueError:
+            _statistics.rx_octets = 0
+
+        try:
+            _statistics.tx_octets = int(statistics[ATTR_VAL][ATTR_TX_OCTETS])
+        except ValueError:
+            _statistics.tx_octets = 0
+
+        if not self.statistics_pre:
+            self.statistics_pre = {}
+        if not self.statistics_cur:
+            self.statistics_cur = {}
+
+        if key >= 0:
+            if key in self.statistics_cur:
+                self.statistics_pre[key] = self.statistics_cur[key]
+            self.statistics_cur[key] = _statistics
+
+    def set_port_statistics_datetime(self, utcnow):
+        """Set port statistics datetime."""
+        self.statistics_pre_dt = self.statistics_cur_dt
+        self.statistics_cur_dt = utcnow
 
     def set_port_status(self, port_status):
         """Set port status."""
@@ -386,6 +511,12 @@ class QSHAData:
         else:
             self.firmware.download_url = download_url
 
+    def set_ports_statistics(self, ports_statistics, utcnow):
+        """Set ports/statistics data."""
+        for port in ports_statistics[ATTR_RESULT]:
+            self.ports.set_port_statistics(port)
+        self.ports.set_port_statistics_datetime(utcnow)
+
     def set_ports_status(self, ports_status):
         """Set ports/status data."""
         for port in ports_status[ATTR_RESULT]:
@@ -510,6 +641,7 @@ class QSHA:
             result |= self.update_firmware_condition()
             result |= self.update_firmware_info()
             result |= self.update_firmware_update_check()
+            result |= self.update_ports_statistics()
             result |= self.update_ports_status()
             result |= self.update_system_board()
             result |= self.update_system_sensor()
@@ -548,6 +680,20 @@ class QSHA:
                 "firmware/update/check", firmware_update
             ):
                 self.__data.set_firmware_update(firmware_update)
+                return True
+            return False
+        except QSAException as err:
+            raise ConnectionError from err
+
+    def update_ports_statistics(self) -> bool:
+        """Update ports/statistics from QNAP QSW API."""
+        try:
+            ports_statistics = self.qsa.get_ports_statistics()
+            utcnow = datetime.utcnow()
+            if ports_statistics and self.__api_response(
+                "ports/statistics", ports_statistics
+            ):
+                self.__data.set_ports_statistics(ports_statistics, utcnow)
                 return True
             return False
         except QSAException as err:
