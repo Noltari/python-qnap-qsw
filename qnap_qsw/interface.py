@@ -3,6 +3,7 @@
 
 import base64
 import logging
+from dataclasses import dataclass
 from http import HTTPStatus
 
 import requests
@@ -39,54 +40,65 @@ class QSAException(Exception):
         self.status = status
 
 
+@dataclass
+class QSAData:
+    """Class for keeping track of QSA data."""
+
+    api_key: str = None
+    api_url: str = None
+    cookies: dict = None
+    debug: bool = API_DEBUG
+    headers: dict = None
+    timeout: int = API_TIMEOUT
+    verify: bool = API_VERIFY
+
+
 # pylint: disable=R0904
 class QSA:
     """Interacts with the QNAP QSW API."""
 
-    # pylint: disable=R0902
     def __init__(self, host):
         """Init QNAP QSW API."""
-        _host = host.strip()
-        if not _host.startswith("http://") and not _host.startswith("https://"):
-            _host = f"http://{_host}"
-        if _host.endswith("/"):
-            _host = _host[:-1]
-        if not _host.endswith(API_URI):
-            _host = f"{_host}/{API_URI}"
-        self.api_url = _host
-        self.api_key = None
-        self.cookies = {API_QSW_LANG: "ENG"}
-        self.debug = API_DEBUG
-        self.headers = {}
-        self.session = requests.Session()
-        self.timeout = API_TIMEOUT
+        api_url = host.strip()
+        if not api_url.startswith("http://") and not api_url.startswith("https://"):
+            api_url = f"http://{api_url}"
+        if api_url.endswith("/"):
+            api_url = api_url[:-1]
+        if not api_url.endswith(API_URI):
+            api_url = f"{api_url}/{API_URI}"
+
+        self.__data = QSAData()
+        self.__data.api_url = api_url
+        self.__data.cookies = {API_QSW_LANG: "ENG"}
+        self.__data.headers = {}
+        self.__session = requests.Session()
+
         # Invalid QNAP HTTPS certificate
-        self.verify = API_VERIFY
         urllib3.disable_warnings(category=InsecureRequestWarning)
 
     def api_call(self, cmd, method="GET", json=None):
         """Perform Rest API call."""
-        url = f"{self.api_url}/{cmd}"
+        url = f"{self.__data.api_url}/{cmd}"
 
-        if self.debug:
-            _LOGGER.warning("api call: %s/%s", self.api_url, cmd)
+        if self.__data.debug:
+            _LOGGER.warning("api call: %s/%s", self.__data.api_url, cmd)
 
         try:
-            response = self.session.request(
+            response = self.__session.request(
                 method,
                 url,
                 json=json,
-                cookies=self.cookies,
-                headers=self.headers,
-                timeout=self.timeout,
-                verify=self.verify,
+                cookies=self.__data.cookies,
+                headers=self.__data.headers,
+                timeout=self.__data.timeout,
+                verify=self.__data.verify,
             )
         except RequestException as err:
             raise QSAException(err) from err
         except ConnectTimeoutError as err:
             raise QSAException(err) from err
 
-        if self.debug:
+        if self.__data.debug:
             _LOGGER.warning(
                 "api_call: %s, status: %s, response %s",
                 cmd,
@@ -103,12 +115,11 @@ class QSA:
 
     def config_url(self):
         """Config URL."""
-        return self.api_url[: self.api_url.rfind(API_URI)]
+        return self.__data.api_url[: self.__data.api_url.rfind(API_URI)]
 
     def debugging(self, debug):
         """Enable/Disable debugging."""
-        self.debug = debug
-        return self.debug
+        self.__data.debug = debug
 
     def get_about(self):
         """Get API about."""
@@ -337,11 +348,11 @@ class QSA:
 
     def login(self, user, password):
         """User login."""
-        self.api_key = None
-        if self.cookies and API_QSW_ID in self.cookies:
-            del self.cookies[API_QSW_ID]
-        if self.headers and API_AUTHORIZATION in self.headers:
-            del self.headers[API_AUTHORIZATION]
+        self.__data.api_key = None
+        if self.__data.cookies and API_QSW_ID in self.__data.cookies:
+            del self.__data.cookies[API_QSW_ID]
+        if self.__data.headers and API_AUTHORIZATION in self.__data.headers:
+            del self.__data.headers[API_AUTHORIZATION]
 
         b64_pass = base64.b64encode(password.encode("utf-8")).decode("utf-8")
         json = {
@@ -358,9 +369,9 @@ class QSA:
         ):
             return None
 
-        self.api_key = response[ATTR_RESULT]
-        self.cookies[API_QSW_ID] = self.api_key
-        self.headers[API_AUTHORIZATION] = "Bearer " + self.api_key
+        self.__data.api_key = response[ATTR_RESULT]
+        self.__data.cookies[API_QSW_ID] = self.__data.api_key
+        self.__data.headers[API_AUTHORIZATION] = "Bearer " + self.__data.api_key
 
         return response
 
@@ -369,11 +380,11 @@ class QSA:
         json = {}
         response = self.post_users_exit(json)
 
-        self.api_key = None
-        if self.cookies and API_QSW_ID in self.cookies:
-            del self.cookies[API_QSW_ID]
-        if self.headers and API_AUTHORIZATION in self.headers:
-            del self.headers[API_AUTHORIZATION]
+        self.__data.api_key = None
+        if self.__data.cookies and API_QSW_ID in self.__data.cookies:
+            del self.__data.cookies[API_QSW_ID]
+        if self.__data.headers and API_AUTHORIZATION in self.__data.headers:
+            del self.__data.headers[API_AUTHORIZATION]
 
         return response
 
