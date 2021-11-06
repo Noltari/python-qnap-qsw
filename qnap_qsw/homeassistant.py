@@ -459,14 +459,10 @@ class QSHA:
         except QSAException:
             return False
 
-    def config_url(self) -> str:
-        """Get configuration URL."""
-        return self.qsa.config_url()
-
     def data(self) -> dict:
         """Get data Dict."""
         _data = self.__data.data()
-        _data.update({DATA_CONFIG_URL: self.config_url()})
+        _data.update({DATA_CONFIG_URL: self.qsa.config_url()})
         return _data
 
     def login(self) -> bool:
